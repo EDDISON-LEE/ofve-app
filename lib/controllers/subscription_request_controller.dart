@@ -1,4 +1,4 @@
-import 'dart:convert'; // <-- IMPORTACIÓN AGREGADA
+import 'dart:convert'; 
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -60,6 +60,24 @@ class SubscriptionRequestController extends ChangeNotifier {
         'amount': amount,
         'image_base64': imageBytes != null ? base64Encode(imageBytes) : null,
       });
+
+      // --- NUEVO: NOTIFICAR A LOS OWNERS POR NUEVO PAGO ---
+      try {
+        final owners = await _supabase.from('usuarios').select('email').eq('rol', 'owner');
+        for (var owner in owners) {
+          if (owner['email'] != null) {
+            await _supabase.functions.invoke('send-push', body: {
+              'target_email': owner['email'],
+              'title': '💰 Nuevo Pago por Verificar',
+              'body': 'Se ha subido un comprobante de \$${amount.toStringAsFixed(2)}.',
+              'data': {'ruta': '/owner_manual_payments'}
+            });
+          }
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error notificando al owner: $e');
+      }
+      // ----------------------------------------------------
 
       successMessage = 'Solicitud enviada. Si la verificación es automática, tu plan se activará en segundos. De lo contrario, un administrador la revisará.';
       return true;

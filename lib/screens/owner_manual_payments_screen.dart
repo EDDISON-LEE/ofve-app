@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart'; // <-- IMPORT AGREGADO
 import '../core/theme/app_theme.dart';
 
 class OwnerManualPaymentsScreen extends StatefulWidget {
@@ -46,6 +47,24 @@ class _OwnerManualPaymentsScreenState extends State<OwnerManualPaymentsScreen> {
         'fecha_respuesta': DateTime.now().toIso8601String(),
       }).eq('id', requestId);
       
+      // --- NUEVO: NOTIFICAR AL USUARIO ---
+      try {
+        final userData = await _supabase.from('usuarios').select('email').eq('id', userId).single();
+        if (userData['email'] != null) {
+          await _supabase.functions.invoke('send-push', body: {
+            'target_email': userData['email'],
+            'title': approve ? '✅ Pago Aprobado' : '❌ Pago Rechazado',
+            'body': approve 
+                ? 'Tu plan $planName ha sido activado exitosamente.' 
+                : 'Tu comprobante de pago no pudo ser validado. Contacta a soporte.',
+            'data': {'ruta': '/vip_plans'}
+          });
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error notificando al usuario: $e');
+      }
+      // -----------------------------------
+      
       _loadRequests();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(approve ? 'Pago aprobado' : 'Pago rechazado'), backgroundColor: approve ? AppColors.success : AppColors.error));
     } catch (e) {
@@ -86,9 +105,18 @@ class _OwnerManualPaymentsScreenState extends State<OwnerManualPaymentsScreen> {
                             if (req['comprobante_url'] != null) ...[
                               const SizedBox(height: 8),
                               TextButton.icon(
-                                onPressed: () {
-                                  // Abrir la imagen del comprobante en el navegador
-                                  // launchUrl(Uri.parse(req['comprobante_url']));
+                                onPressed: () async {
+                                  // --- LÓGICA PARA ABRIR EL COMPROBANTE ---
+                                  final url = Uri.parse(req['comprobante_url']);
+                                  if (await canLaunchUrl(url)) {
+                                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                                  } else {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('No se pudo abrir el comprobante'), backgroundColor: AppColors.error),
+                                      );
+                                    }
+                                  }
                                 },
                                 icon: const Icon(Icons.receipt_long, color: AppColors.primaryPurple),
                                 label: const Text('Ver Comprobante'),

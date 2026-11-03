@@ -10,7 +10,8 @@ import 'account_settings_screen.dart';
 import 'client_orders_screen.dart';
 import 'client_favorites_screen.dart';
 import 'client_followed_stores_screen.dart';
-import 'delivery_dashboard_screen.dart'; // <-- NUEVA IMPORTACIÓN DELIVERY
+import 'delivery_dashboard_screen.dart'; 
+import 'client_payment_history_screen.dart'; // <-- NUEVA IMPORTACIÓN
 
 // IMPORTACIONES PARA EL MENÚ DEL COMERCIO
 import 'merchant_edit_store_screen.dart';
@@ -45,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // REDIRECCIÓN POR ROL
         if (_userController.role == 'admin') return const AdminDashboardScreen();
         if (_userController.role == 'owner') return const OwnerDashboardScreen();
-        if (_userController.role == 'delivery') return const DeliveryDashboardScreen(); // <-- NUEVA REDIRECCIÓN
+        if (_userController.role == 'delivery') return const DeliveryDashboardScreen(); 
 
         // CLIENTES Y COMERCIOS
         return Scaffold(
@@ -222,6 +223,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
+                  // --- NUEVO ITEM PARA COMERCIO ---
+                  _buildDrawerItem(
+                    Icons.receipt_long,
+                    'Mis Pagos',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ClientPaymentHistoryScreen()),
+                      );
+                    },
+                  ),
                   const Divider(),
                 ],
                 if (_userController.role == 'user') ...[
@@ -271,6 +284,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         context,
                         MaterialPageRoute(
                             builder: (_) => const ClientOrdersScreen()),
+                      );
+                    },
+                  ),
+                  // --- NUEVO ITEM PARA CLIENTE ---
+                  _buildDrawerItem(
+                    Icons.receipt_long,
+                    'Mis Pagos',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ClientPaymentHistoryScreen()),
                       );
                     },
                   ),
