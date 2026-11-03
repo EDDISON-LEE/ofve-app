@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // <-- IMPORT AGREGADO
 import '../core/theme/app_theme.dart';
 import '../controllers/auth_controller.dart';
 
@@ -62,7 +63,16 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       final success = await _authController.login(email, password);
-      if (!success && mounted) {
+      
+      if (success) {
+        // --- INICIO DE LA IMPRESIÓN DEL TOKEN ---
+        final session = Supabase.instance.client.auth.currentSession;
+        debugPrint('==================================================');
+        debugPrint('TOKEN DE ACCESO COMPLETO:');
+        debugPrint(session?.accessToken);
+        debugPrint('==================================================');
+        // --- FIN DE LA IMPRESIÓN DEL TOKEN ---
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_authController.errorMessage ?? 'Error de login'), backgroundColor: AppColors.error),
         );
@@ -72,7 +82,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Usamos AnimatedBuilder para escuchar los cambios del controlador
     return AnimatedBuilder(
       animation: _authController,
       builder: (context, child) {

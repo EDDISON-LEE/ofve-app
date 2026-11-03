@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "827885546348",
+    "project_id": "ofve-ba87d",
+    "storage_bucket": "ofve-ba87d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:827885546348:android:abfce7fd8f17b970c5a149",
+        "android_client_info": {
+          "package_name": "com.example.ofve_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzduBfhXpsqgkJ1njfqRxi1r_lpDcEoiI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

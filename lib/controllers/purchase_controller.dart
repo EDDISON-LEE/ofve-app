@@ -57,6 +57,32 @@ class PurchaseController extends ChangeNotifier {
         'p_compra_id': response['id'],
       });
 
+      // --- NUEVA LÓGICA DE NOTIFICACIÓN PUSH AL COMERCIO ---
+      try {
+        // 1. Obtener el email del dueño del comercio
+        final comercioData = await _supabase
+            .from('comercios')
+            .select('usuarios(email)')
+            .eq('id', comercioId)
+            .single();
+        
+        final emailComercio = comercioData['usuarios']?['email'];
+
+        // 2. Invocar la Edge Function (Si el email existe)
+        if (emailComercio != null) {
+          await _supabase.functions.invoke('send-push', body: {
+            'target_email': emailComercio,
+            'title': '¡Nueva Venta en OfVe! 💸',
+            'body': 'Has recibido un nuevo pedido por \$${montoFinal.toStringAsFixed(2)}.',
+            'data': {'ruta': '/merchant_dashboard'}
+          });
+        }
+      } catch (e) {
+        // No bloqueamos la compra si falla la notificación
+        debugPrint('⚠️ Error enviando notificación al comercio: $e');
+      }
+      // -----------------------------------------------------
+
       purchaseData = response;
       return true;
     } catch (e) {

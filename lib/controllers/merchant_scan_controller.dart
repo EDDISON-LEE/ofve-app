@@ -27,9 +27,10 @@ class MerchantScanController extends ChangeNotifier {
       final comercioId = comercio['id'];
 
       // 2. Buscar la compra por el token del QR
+      // CORRECCIÓN: Agregamos 'email' al select de usuarios
       final compra = await _supabase
           .from('compras')
-          .select('*, usuarios(nombre)')
+          .select('*, usuarios(nombre, email)')
           .eq('qr_token', qrToken)
           .maybeSingle();
 
@@ -63,6 +64,23 @@ class MerchantScanController extends ChangeNotifier {
         // Si falla la comisión, no bloqueamos la venta
         debugPrint('⚠️ Error registrando comisión: $e');
       }
+
+      // --- NUEVA LÓGICA DE NOTIFICACIÓN PUSH AL CLIENTE ---
+      try {
+        final clienteEmail = compra['usuarios']?['email'];
+
+        if (clienteEmail != null) {
+          await _supabase.functions.invoke('send-push', body: {
+            'target_email': clienteEmail,
+            'title': '¡Compra Validada! ✅',
+            'body': 'El comercio ha confirmado la entrega de tu producto.',
+            'data': {'ruta': '/client_validation'}
+          });
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error enviando notificación al cliente: $e');
+      }
+      // -----------------------------------------------------
 
       purchaseData = compra;
       isSuccess = true;
