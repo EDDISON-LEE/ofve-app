@@ -7,12 +7,10 @@ class ZonesController extends ChangeNotifier {
   bool isLoading = true;
   List<dynamic> allZones = [];
 
-  // Listas filtradas para los dropdowns
   List<String> estados = [];
   List<String> municipios = [];
   List<String> parroquias = [];
 
-  // Selecciones actuales
   String? selectedEstado;
   String? selectedMunicipio;
   String? selectedParroquia;
@@ -34,8 +32,6 @@ class ZonesController extends ChangeNotifier {
           .order('parroquia', ascending: true);
       
       allZones = response;
-      
-      // Extraer estados únicos
       estados = allZones.map((z) => z['estado'].toString()).toSet().toList();
     } catch (e) {
       debugPrint('Error cargando zonas: $e');
@@ -84,7 +80,6 @@ class ZonesController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Obtener el ID de la zona seleccionada para guardarlo en la BD
   int? getSelectedParroquiaId() {
     if (selectedEstado == null || selectedMunicipio == null || selectedParroquia == null) return null;
     
@@ -95,5 +90,25 @@ class ZonesController extends ChangeNotifier {
       orElse: () => null,
     );
     return zone != null ? zone['id'] : null;
+  }
+
+  // --- NUEVO: Obtener coordenadas para la búsqueda ---
+  Map<String, double>? getSelectedCoordinates() {
+    if (selectedEstado == null || selectedMunicipio == null || selectedParroquia == null) return null;
+    
+    final zone = allZones.firstWhere(
+      (z) => z['estado'] == selectedEstado && 
+             z['municipio'] == selectedMunicipio && 
+             z['parroquia'] == selectedParroquia,
+      orElse: () => null,
+    );
+    
+    if (zone != null && zone['latitud'] != null && zone['longitud'] != null) {
+      return {
+        'lat': (zone['latitud'] as num).toDouble(),
+        'lng': (zone['longitud'] as num).toDouble(),
+      };
+    }
+    return null;
   }
 }

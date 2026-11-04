@@ -13,7 +13,8 @@ import 'merchant_coupons_screen.dart';
 import 'merchant_earnings_screen.dart'; 
 import 'merchant_reviews_screen.dart'; 
 import 'merchant_pools_screen.dart';
-import 'merchant_ads_screen.dart'; // <-- NUEVA IMPORTACIÓN
+import 'merchant_ads_screen.dart'; 
+import 'merchant_offers_list_screen.dart'; // <-- NUEVA IMPORTACIÓN
 
 class MerchantDashboardTab extends StatefulWidget {
   final String storeName;
@@ -176,6 +177,14 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
           subtitle: 'Manual', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateOfferScreen()))
         ),
+        // --- NUEVA TARJETA: MIS OFERTAS ---
+        _buildCard(
+          imagePath: 'assets/icons/inventario.webp', 
+          title: 'Mis Ofertas', 
+          subtitle: 'Ver Catálogo', 
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantOffersListScreen()))
+        ),
+        // ----------------------------------
         _buildCard(
           imagePath: 'assets/icons/robot-ia.webp', 
           title: 'Asistente IA', 
@@ -218,15 +227,12 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
           subtitle: 'Compras Grupales', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantPoolsScreen()))
         ),
-        
-        // NUEVA TARJETA DE PUBLICIDAD
         _buildCard(
           imagePath: 'assets/icons/corona.webp', 
           title: 'Publicidad', 
           subtitle: 'Destacar Ofertas', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantAdsScreen()))
         ),
-        
         _buildCard(
           imagePath: 'assets/icons/reseña.webp', 
           title: 'Radar', 

@@ -11,7 +11,11 @@ import 'client_orders_screen.dart';
 import 'client_favorites_screen.dart';
 import 'client_followed_stores_screen.dart';
 import 'delivery_dashboard_screen.dart'; 
-import 'client_payment_history_screen.dart'; // <-- NUEVA IMPORTACIÓN
+import 'client_payment_history_screen.dart'; 
+// --- NUEVAS IMPORTACIONES ---
+import 'client_planned_purchases_screen.dart'; 
+import 'merchant_branches_screen.dart'; 
+// ----------------------------
 
 // IMPORTACIONES PARA EL MENÚ DEL COMERCIO
 import 'merchant_edit_store_screen.dart';
@@ -223,7 +227,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                  // --- NUEVO ITEM PARA COMERCIO ---
+                  // --- NUEVO ITEM: MIS SUCURSALES ---
+                  _buildDrawerItem(
+                    Icons.business,
+                    'Mis Sucursales',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const MerchantBranchesScreen()),
+                      );
+                    },
+                  ),
+                  // ----------------------------------
                   _buildDrawerItem(
                     Icons.receipt_long,
                     'Mis Pagos',
@@ -287,7 +304,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                  // --- NUEVO ITEM PARA CLIENTE ---
+                  // --- NUEVO ITEM: COMPRAS PLANIFICADAS ---
+                  _buildDrawerItem(
+                    Icons.calendar_today,
+                    'Compras Planificadas',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ClientPlannedPurchasesScreen()),
+                      );
+                    },
+                  ),
+                  // ----------------------------------------
                   _buildDrawerItem(
                     Icons.receipt_long,
                     'Mis Pagos',

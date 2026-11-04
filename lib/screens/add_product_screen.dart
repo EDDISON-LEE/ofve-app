@@ -1,9 +1,10 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/offer_controller.dart';
-import '../controllers/categories_controller.dart'; // <-- NUEVA IMPORTACIÓN
+import '../controllers/categories_controller.dart'; 
 
 class AddProductScreen extends StatefulWidget {
   const AddProductScreen({super.key});
@@ -14,17 +15,15 @@ class AddProductScreen extends StatefulWidget {
 
 class _AddProductScreenState extends State<AddProductScreen> {
   final _offerController = OfferController();
-  final _categoriesController = CategoriesController(); // <-- NUEVO CONTROLADOR
+  final _categoriesController = CategoriesController(); 
   
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
   final _priceController = TextEditingController();
   final _stockController = TextEditingController();
   
-  String? _selectedCategory; // <-- Inicializado en null hasta que carguen
-  
+  String? _selectedCategory; 
   Uint8List? _imageBytes;
-  String? _imageName;
 
   @override
   void dispose() {
@@ -36,52 +35,109 @@ class _AddProductScreenState extends State<AddProductScreen> {
     super.dispose();
   }
 
+  void _mostrarAlertaElegante(String mensaje, {bool esError = true}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, 
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          title: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: (esError ? AppColors.error : AppColors.success).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  esError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+                  color: esError ? AppColors.error : AppColors.success,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                esError ? 'Atención' : '¡Éxito!',
+                style: TextStyle(
+                  color: esError ? AppColors.error : AppColors.success,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            mensaje,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 16, color: AppColors.textDark),
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: esError ? AppColors.error : AppColors.success,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop(); 
+                  if (!esError) Navigator.pop(context); 
+                },
+                child: const Text('Entendido', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 90, maxWidth: 1200);
     
     if (pickedFile != null) {
       final bytes = await pickedFile.readAsBytes();
       setState(() {
         _imageBytes = bytes;
-        _imageName = pickedFile.name;
       });
     }
   }
 
   Future<void> _saveProduct() async {
+    if (_imageBytes == null) {
+      _mostrarAlertaElegante('La foto del producto es obligatoria.');
+      return;
+    }
     if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, espera a que carguen las categorías y selecciona una.'), backgroundColor: Colors.orange),
-      );
+      _mostrarAlertaElegante('Por favor, selecciona una categoría.');
       return;
     }
     if (_nameController.text.isEmpty || _priceController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('El nombre y precio son obligatorios.'), backgroundColor: Colors.red),
-      );
+      _mostrarAlertaElegante('El nombre y precio son obligatorios.');
       return;
+    }
+
+    final precio = double.tryParse(_priceController.text.replaceAll(',', '.').trim()) ?? 0.0;
+    if (precio < 0.01) {
+       _mostrarAlertaElegante('El precio debe ser mayor a 0.01.');
+       return;
     }
 
     final success = await _offerController.createInventoryProduct(
       nombre: _nameController.text,
       descripcion: _descController.text,
       categoria: _selectedCategory!,
-      precioRegular: double.parse(_priceController.text.trim()),
-      stock: int.parse(_stockController.text.trim().isEmpty ? '1' : _stockController.text.trim()),
-      imageBytes: _imageBytes,
-      imageName: _imageName,
+      precioRegular: precio,
+      stock: int.tryParse(_stockController.text.trim()) ?? 1,
+      imageBytes: _imageBytes!, // Ya no se envía imageName
     );
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('¡Producto agregado al inventario!'), backgroundColor: AppColors.success),
-      );
-      Navigator.pop(context);
+      _mostrarAlertaElegante('¡Producto agregado al inventario!', esError: false);
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_offerController.errorMessage ?? 'Error al guardar'), backgroundColor: AppColors.error),
-      );
+      _mostrarAlertaElegante(_offerController.errorMessage ?? 'Error al guardar');
     }
   }
 
@@ -107,7 +163,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           decoration: BoxDecoration(
                             color: AppColors.white,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey.shade300),
+                            border: Border.all(
+                              color: _imageBytes != null ? AppColors.success : Colors.grey.shade300,
+                              width: _imageBytes != null ? 2 : 1,
+                            ),
                           ),
                           child: _imageBytes != null
                               ? ClipRRect(borderRadius: BorderRadius.circular(16), child: Image.memory(_imageBytes!, fit: BoxFit.cover, width: double.infinity))
@@ -116,7 +175,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                   children: [
                                     const Icon(Icons.add_photo_alternate, size: 50, color: AppColors.primaryPurple),
                                     const SizedBox(height: 8),
-                                    const Text('Subir foto del producto', style: TextStyle(color: Colors.grey)),
+                                    const Text('Subir foto (Obligatorio)', style: TextStyle(color: Colors.grey)),
                                   ],
                                 ),
                         ),
@@ -128,7 +187,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       _buildTextField(_descController, 'Descripción (Opcional)', Icons.description, maxLines: 3),
                       const SizedBox(height: 12),
                       
-                      // DROPDOWN DINÁMICO DE CATEGORÍAS
                       DropdownButtonFormField<String>(
                         value: _selectedCategory,
                         decoration: const InputDecoration(labelText: 'Categoría', prefixIcon: Icon(Icons.category)),
@@ -142,7 +200,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         children: [
                           Expanded(child: _buildTextField(_priceController, 'Precio Regular', Icons.attach_money, isNumber: true)),
                           const SizedBox(width: 12),
-                          Expanded(child: _buildTextField(_stockController, 'Stock Disponible', Icons.inventory, isNumber: true)),
+                          Expanded(child: _buildTextField(_stockController, 'Stock', Icons.inventory, isInteger: true)),
                         ],
                       ),
                       
@@ -165,10 +223,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool isNumber = false, int maxLines = 1}) {
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool isNumber = false, bool isInteger = false, int maxLines = 1}) {
+    List<TextInputFormatter>? formatters;
+    if (isNumber && !isInteger) {
+      formatters = [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))];
+    } else if (isInteger) {
+      formatters = [FilteringTextInputFormatter.digitsOnly];
+    }
+
     return TextField(
       controller: controller,
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      keyboardType: isNumber ? TextInputType.numberWithOptions(decimal: !isInteger) : TextInputType.text,
+      inputFormatters: formatters,
       maxLines: maxLines,
       decoration: InputDecoration(
         labelText: label,
