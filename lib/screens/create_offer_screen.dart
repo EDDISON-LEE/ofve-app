@@ -5,8 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/offer_controller.dart';
 import '../controllers/categories_controller.dart';
+import '../controllers/currency_controller.dart'; // <-- IMPORTACIÓN
 import 'ai_assistant_screen.dart';
-import 'merchant_offers_list_screen.dart'; // <-- NUEVA IMPORTACIÓN
+import 'merchant_offers_list_screen.dart'; 
 
 class CreateOfferScreen extends StatefulWidget {
   final String? initialNombre;
@@ -27,6 +28,7 @@ class CreateOfferScreen extends StatefulWidget {
 class _CreateOfferScreenState extends State<CreateOfferScreen> {
   final _offerController = OfferController();
   final _categoriesController = CategoriesController();
+  final _currencyController = CurrencyController(); // <-- INSTANCIA
 
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
@@ -52,6 +54,7 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
     _priceOfferController.dispose();
     _stockController.dispose();
     _categoriesController.dispose();
+    _currencyController.dispose();
     super.dispose();
   }
 
@@ -101,16 +104,13 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 ),
                 onPressed: () {
-                  Navigator.of(context).pop(); // Cierra el diálogo
-                  
-                  // --- CAMBIO AQUÍ: REDIRECCIÓN A LA LISTA ---
+                  Navigator.of(context).pop(); 
                   if (!esError) {
                     Navigator.pushReplacement(
                       context, 
                       MaterialPageRoute(builder: (_) => const MerchantOffersListScreen())
                     );
                   }
-                  // --------------------------------------------
                 },
                 child: const Text('Entendido', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
@@ -201,7 +201,7 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([_offerController, _categoriesController]),
+      animation: Listenable.merge([_offerController, _categoriesController, _currencyController]),
       builder: (context, child) {
         return Scaffold(
           backgroundColor: AppColors.bgTop,
@@ -289,21 +289,59 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
                       Row(
                         children: [
                           Expanded(
-                            child: _buildTextField(
-                              _priceRegController, 
-                              'Precio Regular', 
-                              Icons.attach_money, 
-                              isNumber: true
-                            )
+                            child: ValueListenableBuilder<TextEditingValue>(
+                              valueListenable: _priceRegController,
+                              builder: (context, value, child) {
+                                final usd = double.tryParse(value.text.replaceAll(',', '.')) ?? 0.0;
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildTextField(
+                                      _priceRegController, 
+                                      'Precio Regular', 
+                                      Icons.attach_money, 
+                                      isNumber: true
+                                    ),
+                                    if (usd > 0)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4, left: 12),
+                                        child: Text(
+                                          '≈ ${_currencyController.formatBs(usd)}',
+                                          style: const TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: _buildTextField(
-                              _priceOfferController, 
-                              'Precio Oferta', 
-                              Icons.local_offer, 
-                              isNumber: true
-                            )
+                            child: ValueListenableBuilder<TextEditingValue>(
+                              valueListenable: _priceOfferController,
+                              builder: (context, value, child) {
+                                final usd = double.tryParse(value.text.replaceAll(',', '.')) ?? 0.0;
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildTextField(
+                                      _priceOfferController, 
+                                      'Precio Oferta', 
+                                      Icons.local_offer, 
+                                      isNumber: true
+                                    ),
+                                    if (usd > 0)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4, left: 12),
+                                        child: Text(
+                                          '≈ ${_currencyController.formatBs(usd)}',
+                                          style: const TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),

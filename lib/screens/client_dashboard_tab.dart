@@ -5,7 +5,8 @@ import '../controllers/client_controller.dart';
 import '../controllers/client_announcements_controller.dart';
 import '../controllers/client_favorites_controller.dart';
 import '../core/theme/app_theme.dart';
-import '../widgets/notification_bell.dart'; // <-- NUEVA IMPORTACIÓN
+import '../widgets/notification_bell.dart'; 
+import '../widgets/currency_ticker.dart'; 
 import 'client_validation_screen.dart';
 import 'client_checkout_screen.dart'; 
 import 'client_plan_purchase_screen.dart'; 
@@ -13,7 +14,6 @@ import 'nearby_offers_map_screen.dart';
 import 'all_offers_screen.dart'; 
 import 'client_guided_purchase_screen.dart'; 
 import 'client_ai_assistant_screen.dart'; 
-import 'client_vip_plans_screen.dart';
 import 'client_announcements_screen.dart';
 import 'client_points_screen.dart';
 
@@ -62,6 +62,18 @@ class _ClientDashboardTabState extends State<ClientDashboardTab> {
     );
 
     try {
+      // 1. REGISTRAR DEMANDA PARA POOLS
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId != null) {
+        await Supabase.instance.client.rpc('procesar_busqueda_demanda', params: {
+          'p_usuario_id': userId,
+          'p_termino': query,
+          'p_lat': 10.4806, 
+          'p_lng': -66.9036,
+        });
+      }
+
+      // 2. BUSCAR OFERTAS CON IA
       final response = await Supabase.instance.client.functions.invoke(
         'search-semantic',
         body: {'query': query},
@@ -72,7 +84,7 @@ class _ClientDashboardTabState extends State<ClientDashboardTab> {
       if (response.status == 200) {
         final results = response.data['ofertas'];
         if (results.isEmpty) {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No encontramos ofertas para tu búsqueda.'), backgroundColor: AppColors.warning));
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No encontramos ofertas individuales, pero sumamos tu búsqueda al Pool Comunitario.'), backgroundColor: AppColors.warning));
         } else {
           if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('¡Encontramos ${results.length} ofertas con IA!'), backgroundColor: AppColors.success));
         }
@@ -152,10 +164,7 @@ class _ClientDashboardTabState extends State<ClientDashboardTab> {
         ),
         Row(
           children: [
-            // CAMPANITA DE NOTIFICACIONES EN TIEMPO REAL
             const NotificationBell(),
-
-            // ACCESO DIRECTO A ANUNCIOS GLOBALES
             Stack(
               children: [
                 IconButton(
@@ -197,32 +206,38 @@ class _ClientDashboardTabState extends State<ClientDashboardTab> {
 
   Widget _buildUserInfo() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const CircleAvatar(
-          radius: 24,
-          backgroundColor: AppColors.white,
-          child: Icon(Icons.person, color: Colors.grey, size: 28),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
           children: [
-            const Row(
-              children: [
-                Icon(Icons.star, color: Colors.orange, size: 18),
-                Icon(Icons.star, color: Colors.orange, size: 18),
-                Icon(Icons.star, color: Colors.orange, size: 18),
-                Icon(Icons.star, color: Colors.orange, size: 18),
-                Icon(Icons.star_half, color: Colors.orange, size: 18),
-              ],
+            const CircleAvatar(
+              radius: 24,
+              backgroundColor: AppColors.white,
+              child: Icon(Icons.person, color: Colors.grey, size: 28),
             ),
-            const SizedBox(height: 2),
-            Text(
-              '${widget.puntos} Puntos',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textDark),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.star, color: Colors.orange, size: 18),
+                    Icon(Icons.star, color: Colors.orange, size: 18),
+                    Icon(Icons.star, color: Colors.orange, size: 18),
+                    Icon(Icons.star, color: Colors.orange, size: 18),
+                    Icon(Icons.star_half, color: Colors.orange, size: 18),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${widget.puntos} Puntos',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textDark),
+                ),
+              ],
             ),
           ],
         ),
+        const CurrencyTicker(),
       ],
     );
   }

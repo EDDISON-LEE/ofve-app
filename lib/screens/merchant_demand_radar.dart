@@ -4,7 +4,6 @@ import '../core/theme/app_theme.dart';
 
 class MerchantDemandRadar extends StatefulWidget {
   final String categoriaComercio;
-
   const MerchantDemandRadar({super.key, required this.categoriaComercio});
 
   @override
@@ -14,34 +13,89 @@ class MerchantDemandRadar extends StatefulWidget {
 class _MerchantDemandRadarState extends State<MerchantDemandRadar> {
   final _supabase = Supabase.instance.client;
   bool _isLoading = true;
-  List<dynamic> _busquedas = [];
+  List<dynamic> _demandas = [];
 
   @override
   void initState() {
     super.initState();
-    _cargarRadar();
+    _loadDemandas();
   }
 
-  Future<void> _cargarRadar() async {
+  Future<void> _loadDemandas() async {
+    setState(() => _isLoading = true);
     try {
-      final response = await _supabase.from('busquedas_fallidas').select('termino_busqueda').eq('categoria_ia', widget.categoriaComercio);
-      
-      final Map<String, int> conteo = {};
-      for (var item in response) {
-        final term = item['termino_busqueda'].toString().toLowerCase();
-        conteo[term] = (conteo[term] ?? 0) + 1;
-      }
-
-      final sortedList = conteo.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-
-      setState(() {
-        _busquedas = sortedList.take(10).map((e) => {'termino': e.key, 'cantidad': e.value}).toList();
-      });
+      final response = await _supabase
+          .from('demandas_agrupadas')
+          .select('*')
+          .inFilter('estado', ['Buscando', 'Meta Alcanzada'])
+          .order('fecha_creacion', ascending: false);
+      setState(() => _demandas = response);
     } catch (e) {
       debugPrint('Error cargando radar: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _mostrarFormularioPrecio(dynamic demanda) {
+    final priceCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Crear Pool: ${demanda['termino_original']}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Hay ${demanda['unidades_actuales']} clientes esperando.'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: priceCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Precio al Mayor por Unidad (\$)',
+                prefixIcon: Icon(Icons.attach_money),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () async {
+              final precio = double.tryParse(priceCtrl.text.replaceAll(',', '.'));
+              if (precio == null || precio <= 0) return;
+
+              try {
+                final userId = _supabase.auth.currentUser!.id;
+                final comercioData = await _supabase.from('comercios').select('id').eq('usuario_id', userId).single();
+
+                await _supabase.from('pools_comunitarios').insert({
+                  'producto_nombre': demanda['termino_original'],
+                  'meta_usuarios': demanda['meta_unidades'],
+                  'usuarios_comprometidos': demanda['unidades_actuales'],
+                  'precio_mayorista_sugerido': precio,
+                  'estado': 'Activo',
+                  'creado_por_comercio': comercioData['id'],
+                  'latitud': demanda['latitud_centro'],
+                  'longitud': demanda['longitud_centro'],
+                });
+
+                await _supabase.from('demandas_agrupadas').update({'estado': 'Oferta Creada'}).eq('id', demanda['id']);
+
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                  _loadDemandas();
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Pool creado exitosamente!'), backgroundColor: AppColors.success));
+                }
+              } catch (e) {
+                debugPrint('Error creando pool: $e');
+              }
+            },
+            child: const Text('Publicar Oferta'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -51,47 +105,46 @@ class _MerchantDemandRadarState extends State<MerchantDemandRadar> {
       appBar: AppBar(title: const Text('Radar de Demanda')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppColors.primaryPurple))
-          : Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  margin: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.radar, color: AppColors.primaryPurple, size: 40),
-                      const SizedBox(height: 12),
-                      Text('Esto es lo que buscan tus clientes en ${widget.categoriaComercio}:', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      const SizedBox(height: 8),
-                      const Text('Si agregas estos productos a tu inventario, ¡podrías captar ventas inmediatas!', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: AppColors.textLight)),
-                    ],
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _demandas.length,
+              itemBuilder: (context, index) {
+                final demanda = _demandas[index];
+                final isMeta = demanda['estado'] == 'Meta Alcanzada';
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  color: isMeta ? AppColors.success.withOpacity(0.05) : AppColors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: isMeta ? const BorderSide(color: AppColors.success, width: 2) : BorderSide.none,
                   ),
-                ),
-                Expanded(
-                  child: _busquedas.isEmpty
-                      ? const Center(child: Text('Aún no hay búsquedas insatisfechas en tu ramo.'))
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: _busquedas.length,
-                          itemBuilder: (context, index) {
-                            final item = _busquedas[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              child: ListTile(
-                                leading: CircleAvatar(backgroundColor: AppColors.primaryPurple.withOpacity(0.1), child: Text('${index + 1}', style: const TextStyle(color: AppColors.primaryPurple, fontWeight: FontWeight.bold))),
-                                title: Text(item['termino'].toString().toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
-                                trailing: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-                                  child: Text('${item['cantidad']} búsquedas', style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 12)),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(demanda['termino_original'].toString().toUpperCase(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        Text('${demanda['unidades_actuales']} de ${demanda['meta_unidades']} clientes buscan este producto.', style: const TextStyle(color: Colors.grey)),
+                        const SizedBox(height: 16),
+                        if (isMeta)
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
+                              onPressed: () => _mostrarFormularioPrecio(demanda),
+                              icon: const Icon(Icons.local_offer, color: Colors.white),
+                              label: const Text('¡Meta Alcanzada! Crear Venta al Mayor', style: TextStyle(color: Colors.white)),
+                            ),
+                          )
+                        else
+                          const Text('Esperando más clientes...', style: TextStyle(color: AppColors.warning, fontStyle: FontStyle.italic)),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
     );
   }

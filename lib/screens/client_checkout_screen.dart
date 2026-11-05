@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/purchase_controller.dart';
+import '../controllers/currency_controller.dart'; // <-- IMPORTACIÓN
+import '../widgets/currency_ticker.dart'; // <-- IMPORTACIÓN
 import 'purchase_qr_screen.dart';
 
 class ClientCheckoutScreen extends StatefulWidget {
@@ -14,6 +16,7 @@ class ClientCheckoutScreen extends StatefulWidget {
 
 class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
   final _purchaseController = PurchaseController();
+  final _currencyController = CurrencyController(); // <-- INSTANCIA
   final _couponController = TextEditingController();
 
   double _precioOriginal = 0.0;
@@ -22,9 +25,8 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
   int _porcentajeDescuento = 0;
   bool _isValidatingCoupon = false;
 
-  // Variables de Delivery
   bool _requiereDelivery = false;
-  final double _costoDelivery = 1.50; // Costo fijo de ejemplo
+  final double _costoDelivery = 1.50; 
 
   @override
   void initState() {
@@ -38,6 +40,7 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
   @override
   void dispose() {
     _couponController.dispose();
+    _currencyController.dispose(); // <-- DISPOSE
     super.dispose();
   }
 
@@ -111,17 +114,24 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _purchaseController,
+      animation: Listenable.merge([_purchaseController, _currencyController]),
       builder: (context, child) {
         return Scaffold(
           backgroundColor: AppColors.bgTop,
-          appBar: AppBar(title: const Text('Finalizar Compra')),
+          appBar: AppBar(
+            title: const Text('Finalizar Compra'),
+            actions: const [
+              Padding(
+                padding: EdgeInsets.only(right: 16.0),
+                child: Center(child: CurrencyTicker()), // <-- TASA EN EL APP BAR
+              ),
+            ],
+          ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // TARJETA DEL PRODUCTO
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]),
@@ -141,6 +151,8 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
                             Text(widget.oferta['producto_nombre'] ?? 'Producto', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                             const SizedBox(height: 8),
                             Text('\$${_precioOriginal.toStringAsFixed(2)}', style: const TextStyle(color: AppColors.textLight, fontSize: 14)),
+                            // --- TASA BCV ---
+                            Text('≈ ${_currencyController.formatBs(_precioOriginal)}', style: const TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold)),
                           ],
                         ),
                       )
@@ -150,7 +162,6 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
 
                 const SizedBox(height: 20),
 
-                // DELIVERY SWITCH
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16)),
@@ -171,7 +182,6 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
                 const Text('¿Tienes un cupón de descuento?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
                 
-                // INPUT DE CUPÓN
                 Row(
                   children: [
                     Expanded(
@@ -209,12 +219,17 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
                 const Divider(),
                 const SizedBox(height: 20),
 
-                // RESUMEN DE PAGO
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Subtotal:', style: TextStyle(fontSize: 16)),
-                    Text('\$${_precioOriginal.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16)),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text('\$${_precioOriginal.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16)),
+                        Text('≈ ${_currencyController.formatBs(_precioOriginal)}', style: const TextStyle(color: AppColors.success, fontSize: 11)),
+                      ],
+                    ),
                   ],
                 ),
                 if (_cuponAplicado) ...[
@@ -242,13 +257,19 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Total a Pagar:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    Text('\$${_precioFinal.toStringAsFixed(2)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryPurple)),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text('\$${_precioFinal.toStringAsFixed(2)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryPurple)),
+                        // --- TOTAL EN BS ---
+                        Text('≈ ${_currencyController.formatBs(_precioFinal)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.success)),
+                      ],
+                    ),
                   ],
                 ),
 
                 const SizedBox(height: 40),
 
-                // BOTÓN FINAL
                 SizedBox(
                   height: 55,
                   child: ElevatedButton.icon(

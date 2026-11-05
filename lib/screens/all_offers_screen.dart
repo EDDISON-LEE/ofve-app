@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/client_favorites_controller.dart';
+import '../controllers/currency_controller.dart'; // <-- NUEVA IMPORTACIÓN
 import 'client_checkout_screen.dart';
 
-// CONTROLADOR INTERNO PARA ORDENAR POR PATROCINIO
 class AllOffersController extends ChangeNotifier {
   final _supabase = Supabase.instance.client;
   bool isLoading = true;
@@ -28,7 +28,6 @@ class AllOffersController extends ChangeNotifier {
           .from('ofertas')
           .select('*')
           .eq('estado', 'Activa')
-          // ORDENAMOS PRIMERO POR PATROCINIO Y LUEGO POR FECHA
           .order('es_patrocinada', ascending: false) 
           .order('fecha_inicio', ascending: false);
       offers = response;
@@ -56,7 +55,6 @@ class AllOffersController extends ChangeNotifier {
   }
 }
 
-
 class AllOffersScreen extends StatefulWidget {
   const AllOffersScreen({super.key});
 
@@ -67,10 +65,12 @@ class AllOffersScreen extends StatefulWidget {
 class _AllOffersScreenState extends State<AllOffersScreen> {
   final _offersController = AllOffersController();
   final _favoritesController = ClientFavoritesController();
+  final _currencyController = CurrencyController(); // <-- INSTANCIA
 
   @override
   void dispose() {
     _favoritesController.dispose();
+    _currencyController.dispose(); // <-- DISPOSE
     super.dispose();
   }
 
@@ -81,14 +81,13 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([_offersController, _favoritesController]),
+      animation: Listenable.merge([_offersController, _favoritesController, _currencyController]),
       builder: (context, child) {
         return Scaffold(
           backgroundColor: AppColors.bgTop,
           appBar: AppBar(title: const Text('Todas las Ofertas')),
           body: Column(
             children: [
-              // FILTRO DE CATEGORÍAS
               SizedBox(
                 height: 50,
                 child: ListView.builder(
@@ -115,7 +114,6 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                 ),
               ),
 
-              // LISTA DE OFERTAS
               Expanded(
                 child: _offersController.isLoading
                     ? const Center(child: CircularProgressIndicator(color: AppColors.primaryPurple))
@@ -125,7 +123,7 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                             padding: const EdgeInsets.all(16),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              childAspectRatio: 0.75,
+                              childAspectRatio: 0.7, // Ajustado para dar espacio al texto en Bs
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
                             ),
@@ -146,6 +144,7 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
   Widget _buildOfferCard(Map<String, dynamic> oferta) {
     final isFav = _favoritesController.isFavorite(oferta['id'].toString());
     final isSponsored = oferta['es_patrocinada'] ?? false; 
+    final precioUsd = (oferta['precio_oferta'] ?? oferta['precio_regular'] as num).toDouble();
 
     return Container(
       decoration: BoxDecoration(
@@ -158,7 +157,6 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          // CORRECCIÓN AQUÍ: _irAlCheckout en lugar de _irAlClheckout
           onTap: () => _irAlCheckout(oferta), 
           child: Stack(
             children: [
@@ -201,13 +199,17 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                             ],
                           ],
                         ),
+                        // --- PRECIO EN BS ---
+                        Text(
+                          _currencyController.formatBs(precioUsd),
+                          style: const TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
                       ],
                     ),
                   ),
                 ],
               ),
               
-              // BADGE DE "DESTACADO"
               if (isSponsored)
                 Positioned(
                   top: 0,
@@ -228,7 +230,6 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                   ),
                 ),
               
-              // BOTÓN DE FAVORITO
               Positioned(
                 top: 8,
                 right: 8,

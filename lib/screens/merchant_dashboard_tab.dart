@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../widgets/notification_bell.dart'; 
+import '../widgets/currency_ticker.dart'; // <-- NUEVA IMPORTACIÓN
 import 'create_offer_screen.dart';
 import 'merchant_plans_screen.dart';
 import 'merchant_metrics_screen.dart';
@@ -14,7 +15,7 @@ import 'merchant_earnings_screen.dart';
 import 'merchant_reviews_screen.dart'; 
 import 'merchant_pools_screen.dart';
 import 'merchant_ads_screen.dart'; 
-import 'merchant_offers_list_screen.dart'; // <-- NUEVA IMPORTACIÓN
+import 'merchant_offers_list_screen.dart'; 
 
 class MerchantDashboardTab extends StatefulWidget {
   final String storeName;
@@ -114,10 +115,16 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
       children: [
         Text(widget.storeName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: AppColors.textDark)),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, // <-- AÑADIDO PARA SEPARAR
           children: [
-            const Icon(Icons.category, size: 14, color: AppColors.primaryPurple),
-            const SizedBox(width: 4),
-            Text(widget.category, style: const TextStyle(fontSize: 14, color: AppColors.primaryPurple, fontWeight: FontWeight.w600)),
+            Row(
+              children: [
+                const Icon(Icons.category, size: 14, color: AppColors.primaryPurple),
+                const SizedBox(width: 4),
+                Text(widget.category, style: const TextStyle(fontSize: 14, color: AppColors.primaryPurple, fontWeight: FontWeight.w600)),
+              ],
+            ),
+            const CurrencyTicker(), // <-- TASA AGREGADA AQUÍ
           ],
         ),
         const SizedBox(height: 16),
@@ -169,7 +176,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
           imagePath: 'assets/icons/oferta.webp', 
           title: 'Escanear', 
           subtitle: 'Validar Compra', 
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantScannerScreen()))
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantScannerScreen())) // <-- CORREGIDO
         ),
         _buildCard(
           imagePath: 'assets/icons/oferta.webp',
@@ -177,14 +184,12 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
           subtitle: 'Manual', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateOfferScreen()))
         ),
-        // --- NUEVA TARJETA: MIS OFERTAS ---
         _buildCard(
           imagePath: 'assets/icons/inventario.webp', 
           title: 'Mis Ofertas', 
           subtitle: 'Ver Catálogo', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantOffersListScreen()))
         ),
-        // ----------------------------------
         _buildCard(
           imagePath: 'assets/icons/robot-ia.webp', 
           title: 'Asistente IA', 

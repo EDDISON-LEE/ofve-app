@@ -12,12 +12,10 @@ import 'client_favorites_screen.dart';
 import 'client_followed_stores_screen.dart';
 import 'delivery_dashboard_screen.dart'; 
 import 'client_payment_history_screen.dart'; 
-// --- NUEVAS IMPORTACIONES ---
 import 'client_planned_purchases_screen.dart'; 
-import 'merchant_branches_screen.dart'; 
-// ----------------------------
+import 'merchant_branches_screen.dart';
+import 'client_pools_screen.dart'; // <-- NUEVA IMPORTACIÓN
 
-// IMPORTACIONES PARA EL MENÚ DEL COMERCIO
 import 'merchant_edit_store_screen.dart';
 import 'merchant_metrics_screen.dart';
 import 'merchant_earnings_screen.dart';
@@ -227,7 +225,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                  // --- NUEVO ITEM: MIS SUCURSALES ---
                   _buildDrawerItem(
                     Icons.business,
                     'Mis Sucursales',
@@ -240,7 +237,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                  // ----------------------------------
                   _buildDrawerItem(
                     Icons.receipt_long,
                     'Mis Pagos',
@@ -267,6 +263,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
+                  // --- NUEVO ITEM: POOLS COMUNITARIOS ---
+                  _buildDrawerItem(
+                    Icons.groups,
+                    'Pools Comunitarios',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ClientPoolsScreen()),
+                      );
+                    },
+                  ),
+                  // --------------------------------------
                   _buildDrawerItem(
                     Icons.favorite_border,
                     'Favoritos',
@@ -304,7 +313,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                  // --- NUEVO ITEM: COMPRAS PLANIFICADAS ---
                   _buildDrawerItem(
                     Icons.calendar_today,
                     'Compras Planificadas',
@@ -316,7 +324,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                  // ----------------------------------------
                   _buildDrawerItem(
                     Icons.receipt_long,
                     'Mis Pagos',

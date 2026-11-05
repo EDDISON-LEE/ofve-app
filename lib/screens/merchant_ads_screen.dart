@@ -48,6 +48,7 @@ class _MerchantAdsScreenState extends State<MerchantAdsScreen> {
               ElevatedButton(
                 onPressed: () async {
                   final success = await _adsController.buyAd(offerId: offerId, days: selectedDays);
+                  if (!mounted) return; // evitamos el crasheo
                   if (ctx.mounted) Navigator.pop(ctx);
                   if (success && mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_adsController.successMessage!), backgroundColor: AppColors.success));

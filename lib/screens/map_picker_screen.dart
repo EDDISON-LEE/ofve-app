@@ -16,7 +16,7 @@ class MapPickerScreen extends StatefulWidget {
 class _MapPickerScreenState extends State<MapPickerScreen> {
   final MapController _mapController = MapController();
   LatLng _currentCenter = const LatLng(10.4806, -66.9036); // Caracas por defecto
-  bool _isLoadingLocation = false;
+  
 
   final Color primaryPurple = const Color(0xFF6B4EFF);
 
@@ -31,7 +31,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
   }
 
   Future<void> _getCurrentLocation() async {
-    setState(() => _isLoadingLocation = true);
+   
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) throw Exception('GPS desactivado');
@@ -52,7 +52,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error GPS: $e'), backgroundColor: Colors.red));
       }
     } finally {
-      if (mounted) setState(() => _isLoadingLocation = false);
+      //if (mounted) setState(() => _isLoadingLocation = false);
     }
   }
 
