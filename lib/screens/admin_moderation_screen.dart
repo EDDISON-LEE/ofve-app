@@ -24,14 +24,12 @@ class _AdminModerationScreenState extends State<AdminModerationScreen> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      // 1. Cargar Reportes
       final resReportes = await _supabase
           .from('reportes_moderacion')
           .select('*, reportante:reportante_id(nombre), reportado:reportado_id(nombre)')
           .eq('estado', 'Pendiente')
           .order('fecha', ascending: false);
 
-      // 2. Cargar Apelaciones
       final resApelaciones = await _supabase
           .from('sanciones')
           .select('*, usuarios(nombre, email)')
@@ -63,7 +61,8 @@ class _AdminModerationScreenState extends State<AdminModerationScreen> {
     }
   }
 
-  Future<void> _resolverApelacion(String sancionId, String usuarioId, bool aprobar) async {
+  // --- ACTUALIZADO: Ahora recibe el email para notificar al usuario ---
+  Future<void> _resolverApelacion(String sancionId, String usuarioId, String email, bool aprobar) async {
     try {
       if (aprobar) {
         // Levantar baneo
@@ -73,10 +72,27 @@ class _AdminModerationScreenState extends State<AdminModerationScreen> {
         // Mantener baneo
         await _supabase.from('sanciones').update({'apelacion_estado': 'Rechazada'}).eq('id', sancionId);
       }
+
+      // --- NUEVO: Notificar al usuario de la decisión ---
+      try {
+        await _supabase.functions.invoke('send-push', body: {
+          'target_email': email,
+          'title': aprobar ? '✅ Apelación Aprobada' : '❌ Apelación Rechazada',
+          'body': aprobar 
+              ? 'Tu cuenta ha sido reactivada. ¡Bienvenido de vuelta a OfVe!' 
+              : 'Tu apelación no fue aceptada. La cuenta permanecerá suspendida.',
+          'data': {'ruta': '/'}
+        });
+      } catch (e) {
+        debugPrint('⚠️ Error notificando al usuario: $e');
+      }
+      // --------------------------------------------------
+
       _loadData();
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Apelación procesada.'), backgroundColor: AppColors.success));
     } catch (e) {
       debugPrint('Error procesando apelación: $e');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error));
     }
   }
 
@@ -159,6 +175,8 @@ class _AdminModerationScreenState extends State<AdminModerationScreen> {
       itemBuilder: (context, index) {
         final a = _apelaciones[index];
         final user = a['usuarios'];
+        final email = user['email'] ?? ''; // <-- OBTENEMOS EL EMAIL
+        
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -167,23 +185,28 @@ class _AdminModerationScreenState extends State<AdminModerationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Usuario: ${user['nombre']} (${user['email']})', style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text('Usuario: ${user['nombre']} ($email)', style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text('Motivo original: ${a['motivo']}', style: const TextStyle(color: AppColors.error, fontSize: 13)),
                 const Divider(),
                 const Text('Apelación del usuario:', style: TextStyle(fontWeight: FontWeight.w600)),
-                Text('"${a['apelacion_texto']}"', style: const TextStyle(fontStyle: FontStyle.italic)),
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8)),
+                  child: Text('"${a['apelacion_texto']}"', style: const TextStyle(fontStyle: FontStyle.italic)),
+                ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     OutlinedButton(
-                      onPressed: () => _resolverApelacion(a['id'], user['id'], false),
+                      onPressed: () => _resolverApelacion(a['id'], user['id'], email, false),
                       child: const Text('Mantener Baneo', style: TextStyle(color: AppColors.error)),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
-                      onPressed: () => _resolverApelacion(a['id'], user['id'], true),
+                      onPressed: () => _resolverApelacion(a['id'], user['id'], email, true),
                       child: const Text('Aprobar y Reactivar', style: TextStyle(color: Colors.white)),
                     ),
                   ],

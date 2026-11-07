@@ -13,6 +13,7 @@ class _BannedScreenState extends State<BannedScreen> {
   final _supabase = Supabase.instance.client;
   final _appealController = TextEditingController();
   bool _isLoading = true;
+  bool _isSending = false;
   Map<String, dynamic>? _sancion;
 
   @override
@@ -33,35 +34,53 @@ class _BannedScreenState extends State<BannedScreen> {
           .limit(1)
           .maybeSingle();
       
-      setState(() => _sancion = response);
+      if (mounted) setState(() => _sancion = response);
     } catch (e) {
       debugPrint('Error cargando sanción: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _enviarApelacion() async {
     if (_appealController.text.trim().isEmpty) return;
 
-    setState(() => _isLoading = true);
+    setState(() => _isSending = true);
     try {
+      // 1. Guardar apelación
       await _supabase.from('sanciones').update({
         'apelacion_texto': _appealController.text.trim(),
         'apelacion_estado': 'Pendiente',
         'fecha_apelacion': DateTime.now().toIso8601String(),
       }).eq('id', _sancion!['id']);
 
+      // 2. Notificar a Admins y Owners
+      try {
+        final admins = await _supabase.from('usuarios').select('email').inFilter('rol', ['admin', 'owner']);
+        for (var admin in admins) {
+          if (admin['email'] != null) {
+            await _supabase.functions.invoke('send-push', body: {
+              'target_email': admin['email'],
+              'title': '⚖️ Nueva Apelación de Baneo',
+              'body': 'Un usuario ha enviado una apelación. Revisa el panel de moderación.',
+              'data': {'ruta': '/admin_moderation'}
+            });
+          }
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error notificando a admins: $e');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Apelación enviada. Un administrador la revisará pronto.'), backgroundColor: AppColors.success));
-        _loadSancion();
+        _loadSancion(); // Recargar para cambiar la vista a "En revisión"
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al enviar apelación: $e'), backgroundColor: AppColors.error));
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() => _isSending = false);
     }
   }
 
@@ -70,6 +89,9 @@ class _BannedScreenState extends State<BannedScreen> {
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator(color: AppColors.error)));
     }
+
+    final isPending = _sancion != null && _sancion!['apelacion_estado'] == 'Pendiente';
+    final isRejected = _sancion != null && _sancion!['apelacion_estado'] == 'Rechazada';
 
     return Scaffold(
       backgroundColor: AppColors.bgTop,
@@ -90,14 +112,38 @@ class _BannedScreenState extends State<BannedScreen> {
               ),
               const SizedBox(height: 30),
 
-              if (_sancion != null && _sancion!['apelacion_estado'] == 'Pendiente') ...[
+              // --- ESTADOS DE LA APELACIÓN ---
+              if (isPending) ...[
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: const Text('Tu apelación está en revisión. Te notificaremos pronto.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold)),
+                  decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.warning)),
+                  child: const Column(
+                    children: [
+                      Icon(Icons.hourglass_top, color: AppColors.warning, size: 30),
+                      SizedBox(height: 8),
+                      Text('Apelación en Revisión', style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold, fontSize: 16)),
+                      SizedBox(height: 4),
+                      Text('Nuestro equipo está evaluando tu caso. Te notificaremos la decisión pronto.', textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
+                    ],
+                  ),
                 ),
-              ] else if (_sancion != null && _sancion!['apelacion_estado'] != 'Aprobada') ...[
-                const Text('¿Crees que es un error? Puedes apelar aquí:', style: TextStyle(fontWeight: FontWeight.bold)),
+              ] else if (isRejected) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.error)),
+                  child: const Column(
+                    children: [
+                      Icon(Icons.cancel, color: AppColors.error, size: 30),
+                      SizedBox(height: 8),
+                      Text('Apelación Rechazada', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 16)),
+                      SizedBox(height: 4),
+                      Text('Tu cuenta permanecerá suspendida por el momento.', textAlign: TextAlign.center, style: TextStyle(fontSize: 13)),
+                    ],
+                  ),
+                ),
+              ] else ...[
+                // FORMULARIO DE APELACIÓN
+                const Text('¿Crees que es un error? Cuéntanos tu caso:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _appealController,
@@ -115,8 +161,10 @@ class _BannedScreenState extends State<BannedScreen> {
                   height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryPurple),
-                    onPressed: _enviarApelacion,
-                    child: const Text('Enviar Apelación', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    onPressed: _isSending ? null : _enviarApelacion,
+                    child: _isSending 
+                        ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Text('Enviar Apelación', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],

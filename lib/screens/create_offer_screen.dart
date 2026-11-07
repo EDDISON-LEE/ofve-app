@@ -2,10 +2,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart'; // <-- NUEVO IMPORT
 import '../core/theme/app_theme.dart';
 import '../controllers/offer_controller.dart';
 import '../controllers/categories_controller.dart';
-import '../controllers/currency_controller.dart'; // <-- IMPORTACIÓN
+import '../controllers/currency_controller.dart'; 
 import 'ai_assistant_screen.dart';
 import 'merchant_offers_list_screen.dart'; 
 
@@ -28,7 +29,7 @@ class CreateOfferScreen extends StatefulWidget {
 class _CreateOfferScreenState extends State<CreateOfferScreen> {
   final _offerController = OfferController();
   final _categoriesController = CategoriesController();
-  final _currencyController = CurrencyController(); // <-- INSTANCIA
+  final _currencyController = CurrencyController(); 
 
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
@@ -39,6 +40,11 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
   String? _selectedCategory;
   Uint8List? _imageBytes;
   
+  // --- NUEVAS VARIABLES PARA CADUCIDAD ---
+  bool _esPerecedero = false;
+  DateTime? _fechaCaducidad;
+  // ---------------------------------------
+
   @override
   void initState() {
     super.initState();
@@ -147,6 +153,25 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
     }
   }
 
+  Future<void> _generarDescripcionIA() async {
+    // Si hay imagen, la pasamos a la IA para que haga Vision
+    final resultado = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AiAssistantScreen(
+          initialProductName: _nameController.text,
+          imageBytes: _imageBytes, // <-- PASAMOS LA IMAGEN
+        ),
+      ),
+    );
+
+    if (resultado != null && resultado.isNotEmpty) {
+      setState(() {
+        _descController.text = resultado;
+      });
+    }
+  }
+
   Future<void> _saveOffer() async {
     if (_imageBytes == null) {
       _mostrarAlertaElegante('La foto del producto es obligatoria para que los clientes puedan verlo.');
@@ -165,6 +190,21 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
       _mostrarAlertaElegante('Por favor, llena todos los campos del formulario.');
       return;
     }
+
+    // --- VALIDACIÓN DE CADUCIDAD ---
+    if (_esPerecedero && _fechaCaducidad == null) {
+      _mostrarAlertaElegante('Debes seleccionar la fecha de caducidad para este producto.');
+      return;
+    }
+
+    if (_esPerecedero && _fechaCaducidad != null) {
+      final diasRestantes = _fechaCaducidad!.difference(DateTime.now()).inDays;
+      if (diasRestantes < 5) {
+        _mostrarAlertaElegante('No puedes publicar un producto que caduca en menos de 5 días. ¡Protege la salud de los clientes!');
+        return;
+      }
+    }
+    // ---------------------------------
 
     final precioRegular = _formatearPrecio(_priceRegController.text);
     final precioOferta = _formatearPrecio(_priceOfferController.text);
@@ -189,6 +229,7 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
       stock: stock,
       imageBytes: _imageBytes!,
       solicitudAnimalId: widget.solicitudAnimalId,
+      fechaCaducidad: _fechaCaducidad, // <-- PASAMOS LA FECHA
     );
 
     if (success && mounted) {
@@ -264,15 +305,9 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
                           labelText: 'Descripción (Opcional)',
                           prefixIcon: const Icon(Icons.description),
                           suffixIcon: IconButton(
-                            tooltip: 'Generar con IA',
+                            tooltip: 'Generar con IA (Vision)',
                             icon: const Icon(Icons.auto_awesome, color: AppColors.primaryPurple),
-                            onPressed: () async {
-                                final res = await Navigator.push<String>(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => AiAssistantScreen(initialProductName: _nameController.text)),
-                                );
-                                if (res != null) setState(() => _descController.text = res);
-                            },
+                            onPressed: _generarDescripcionIA, // <-- LLAMADA ACTUALIZADA
                           ),
                         ),
                       ),
@@ -354,6 +389,39 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
                         isNumber: true,
                         isInteger: true,
                       ),
+
+                      // --- NUEVA SECCIÓN DE CADUCIDAD ---
+                      const SizedBox(height: 16),
+                      SwitchListTile(
+                        title: const Text('¿Es un producto perecedero?', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                        subtitle: const Text('Si es de consumo humano o animal, indica su caducidad.', style: TextStyle(fontSize: 12)),
+                        value: _esPerecedero,
+                        activeColor: AppColors.primaryPurple,
+                        contentPadding: EdgeInsets.zero,
+                        onChanged: (val) => setState(() {
+                          _esPerecedero = val;
+                          if (!val) _fechaCaducidad = null;
+                        }),
+                      ),
+                      
+                      if (_esPerecedero)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.calendar_today, color: AppColors.warning),
+                          title: const Text('Fecha de Caducidad', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          subtitle: Text(_fechaCaducidad != null ? DateFormat('dd/MM/yyyy').format(_fechaCaducidad!) : 'Seleccionar fecha'),
+                          trailing: const Icon(Icons.edit, size: 20, color: Colors.grey),
+                          onTap: () async {
+                            final date = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now().add(const Duration(days: 10)),
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime.now().add(const Duration(days: 365)),
+                            );
+                            if (date != null) setState(() => _fechaCaducidad = date);
+                          },
+                        ),
+                      // ---------------------------------
                       
                       const SizedBox(height: 30),
                       

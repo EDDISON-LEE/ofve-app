@@ -1,56 +1,87 @@
-#!/bin/bash
+# dump_ofve.ps1 — Genera OFVE_PROJECT_SNAPSHOT.md en la raíz del proyecto
+# Uso: powershell -ExecutionPolicy Bypass -File .\dump_ofve.ps1
 
-OUTPUT_FILE="OFVE_PROJECT_SNAPSHOT.md"
-> "$OUTPUT_FILE"
+$ErrorActionPreference = "SilentlyContinue"
+$Out     = "OFVE_PROJECT_SNAPSHOT.md"
+$Fecha   = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
-echo "# SNAPSHOT DEL PROYECTO OFVE" >> "$OUTPUT_FILE"
-echo "Generado: $(date)" >> "$OUTPUT_FILE"
-echo "" >> "$OUTPUT_FILE"
+# --- Validación: debe ejecutarse en la raíz del proyecto ---
+if (-not (Test-Path "pubspec.yaml")) {
+    Write-Host "❌ No encuentro pubspec.yaml. Ejecuta este script desde la raíz de ofve-app." -ForegroundColor Red
+    exit 1
+}
 
-# 1. Estructura de carpetas (ignorando build, .dart_tool, etc.)
-echo "## 📂 ESTRUCTURA DE CARPETAS" >> "$OUTPUT_FILE"
-echo '```' >> "$OUTPUT_FILE"
-tree -I 'build|.dart_tool|.git|ios|android|web|linux|macos|windows|.vscode' -L 4 >> "$OUTPUT_FILE" 2>/dev/null || find . -type d -not -path '*/.*' -not -path './build/*' -not -path './.dart_tool/*' | sort >> "$OUTPUT_FILE"
-echo '```' >> "$OUTPUT_FILE"
-echo "" >> "$OUTPUT_FILE"
+Set-Content -Path $Out -Value "# OFVE PROJECT SNAPSHOT" -Encoding UTF8
+Add-Content -Path $Out -Value "Generado: $Fecha"
+Add-Content -Path $Out -Value ""
 
-# 2. pubspec.yaml (dependencias)
-echo "## 📦 PUBSPEC.YAML" >> "$OUTPUT_FILE"
-echo '```yaml' >> "$OUTPUT_FILE"
-cat pubspec.yaml >> "$OUTPUT_FILE"
-echo '```' >> "$OUTPUT_FILE"
-echo "" >> "$OUTPUT_FILE"
+# --- 1) Estructura lib/ ---
+Add-Content -Path $Out -Value "## 📁 ESTRUCTURA lib/"
+Add-Content -Path $Out -Value '```'
+Get-ChildItem -Path "lib" -Recurse -Filter "*.dart" |
+    ForEach-Object { $_.FullName.Replace((Get-Location).Path + "\", "").Replace("\", "/") } |
+    Sort-Object | Add-Content -Path $Out
+Add-Content -Path $Out -Value '```'
+Add-Content -Path $Out -Value ""
 
-# 3. Todos los archivos .dart dentro de lib/
-echo "## 💻 CÓDIGO DART (lib/)" >> "$OUTPUT_FILE"
-find lib -name "*.dart" -type f | sort | while read -r file; do
-    echo "### 📄 $file" >> "$OUTPUT_FILE"
-    echo '```dart' >> "$OUTPUT_FILE"
-    cat "$file" >> "$OUTPUT_FILE"
-    echo '```' >> "$OUTPUT_FILE"
-    echo "" >> "$OUTPUT_FILE"
-done
+# --- 2) pubspec.yaml ---
+Add-Content -Path $Out -Value "## 📦 pubspec.yaml"
+Add-Content -Path $Out -Value '```yaml'
+Get-Content "pubspec.yaml" | Add-Content -Path $Out
+Add-Content -Path $Out -Value '```'
+Add-Content -Path $Out -Value ""
 
-# 4. Archivos SQL (si los tienes en una carpeta sql/ o supabase/)
-echo "## 🗄️ ESQUEMA SQL" >> "$OUTPUT_FILE"
-if [ -d "sql" ]; then
-    find sql -name "*.sql" -type f | sort | while read -r file; do
-        echo "### 📄 $file" >> "$OUTPUT_FILE"
-        echo '```sql' >> "$OUTPUT_FILE"
-        cat "$file" >> "$OUTPUT_FILE"
-        echo '```' >> "$OUTPUT_FILE"
-        echo "" >> "$OUTPUT_FILE"
-    done
-elif [ -d "supabase" ]; then
-    find supabase -name "*.sql" -type f | sort | while read -r file; do
-        echo "### 📄 $file" >> "$OUTPUT_FILE"
-        echo '```sql' >> "$OUTPUT_FILE"
-        cat "$file" >> "$OUTPUT_FILE"
-        echo '```' >> "$OUTPUT_FILE"
-        echo "" >> "$OUTPUT_FILE"
-    done
-else
-    echo "*No se encontró carpeta sql/ o supabase/ con archivos .sql*" >> "$OUTPUT_FILE"
-fi
+# --- 3) Código Dart ---
+Add-Content -Path $Out -Value "## 💻 CÓDIGO DART"
+Get-ChildItem -Path "lib" -Recurse -Filter "*.dart" |
+    Sort-Object FullName |
+    ForEach-Object {
+        $rel = $_.FullName.Replace((Get-Location).Path + "\", "").Replace("\", "/")
+        Add-Content -Path $Out -Value ""
+        Add-Content -Path $Out -Value "### $rel"
+        Add-Content -Path $Out -Value '```dart'
+        Get-Content $_.FullName | Add-Content -Path $Out
+        Add-Content -Path $Out -Value '```'
+    }
 
-echo "✅ Snapshot generado en: $OUTPUT_FILE"
+# --- 4) SQL ---
+Add-Content -Path $Out -Value ""
+Add-Content -Path $Out -Value "## 🗄️ SQL"
+Get-ChildItem -Recurse -Filter "*.sql" |
+    Where-Object { $_.FullName -notmatch "\\(\.dart_tool|build|node_modules|\.git)\\" } |
+    Sort-Object FullName |
+    ForEach-Object {
+        $rel = $_.FullName.Replace((Get-Location).Path + "\", "").Replace("\", "/")
+        Add-Content -Path $Out -Value ""
+        Add-Content -Path $Out -Value "### $rel"
+        Add-Content -Path $Out -Value '```sql'
+        Get-Content $_.FullName | Add-Content -Path $Out
+        Add-Content -Path $Out -Value '```'
+    }
+
+# --- 5) Edge Functions ---
+Add-Content -Path $Out -Value ""
+Add-Content -Path $Out -Value "## 🚀 EDGE FUNCTIONS (supabase/functions/)"
+if (Test-Path "supabase\functions") {
+    Get-ChildItem -Path "supabase\functions" -Recurse -Filter "*.ts" |
+        Sort-Object FullName |
+        ForEach-Object {
+            $rel = $_.FullName.Replace((Get-Location).Path + "\", "").Replace("\", "/")
+            Add-Content -Path $Out -Value ""
+            Add-Content -Path $Out -Value "### $rel"
+            Add-Content -Path $Out -Value '```typescript'
+            Get-Content $_.FullName | Add-Content -Path $Out
+            Add-Content -Path $Out -Value '```'
+        }
+} else {
+    Add-Content -Path $Out -Value "(no existe carpeta supabase/functions)"
+}
+
+# --- Resumen ---
+$size = (Get-Item $Out).Length
+$kb = [math]::Round($size / 1KB, 1)
+Write-Host ""
+Write-Host "✅ Snapshot generado: $Out ($kb KB)" -ForegroundColor Green
+if ($kb -gt 200) {
+    Write-Host "⚠️  Es grande. Pégame solo las secciones que necesitemos." -ForegroundColor Yellow
+}

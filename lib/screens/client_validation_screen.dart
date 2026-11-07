@@ -47,54 +47,84 @@ class _ClientValidationScreenState extends State<ClientValidationScreen> {
                         ],
                       ),
                     )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _validationController.pendingValidations.length,
-                      itemBuilder: (context, index) {
-                        final compra = _validationController.pendingValidations[index];
-                        final fecha = DateTime.parse(compra['fecha_compra']).toLocal();
-                        final fechaStr = DateFormat('dd/MM/yyyy HH:mm').format(fecha);
-                        final nombreComercio = compra['comercios']?['nombre_comercial'] ?? 'Comercio';
-
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(nombreComercio, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                                      child: const Text('Pendiente', style: TextStyle(color: AppColors.warning, fontSize: 10, fontWeight: FontWeight.bold)),
-                                    )
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text('Compra: $fechaStr', style: const TextStyle(color: AppColors.textLight, fontSize: 12)),
-                                Text('Total: \$${compra['total_pagado']}', style: const TextStyle(color: AppColors.primaryPurple, fontWeight: FontWeight.bold, fontSize: 14)),
-                                const SizedBox(height: 16),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryPurple),
-                                    onPressed: () => _abrirFormularioValidacion(compra),
-                                    icon: const Icon(Icons.rate_review, color: AppColors.white),
-                                    label: const Text('Validar Compra'),
-                                  ),
-                                )
-                              ],
-                            ),
+                  // --- NUEVO: Estructura con Column para poner el banner arriba ---
+                  : Column(
+                      children: [
+                        // BANNER DE ADVERTENCIA
+                        Container(
+                          margin: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning.withOpacity(0.1),
+                            border: Border.all(color: AppColors.warning),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                        );
-                      },
+                          child: Row(
+                            children: [
+                              const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 30),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Tienes ${_validationController.pendingValidations.length} compras sin validar. Si acumulas más de 3 en un mes, perderás todos tus puntos.',
+                                  style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // LISTA DE COMPRAS
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: _validationController.pendingValidations.length,
+                            itemBuilder: (context, index) {
+                              final compra = _validationController.pendingValidations[index];
+                              final fecha = DateTime.parse(compra['fecha_compra']).toLocal();
+                              final fechaStr = DateFormat('dd/MM/yyyy HH:mm').format(fecha);
+                              final nombreComercio = compra['comercios']?['nombre_comercial'] ?? 'Comercio';
+
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 16),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(nombreComercio, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                            child: const Text('Pendiente', style: TextStyle(color: AppColors.warning, fontSize: 10, fontWeight: FontWeight.bold)),
+                                          )
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text('Compra: $fechaStr', style: const TextStyle(color: AppColors.textLight, fontSize: 12)),
+                                      Text('Total: \$${compra['total_pagado']}', style: const TextStyle(color: AppColors.primaryPurple, fontWeight: FontWeight.bold, fontSize: 14)),
+                                      const SizedBox(height: 16),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryPurple),
+                                          onPressed: () => _abrirFormularioValidacion(compra),
+                                          icon: const Icon(Icons.rate_review, color: AppColors.white),
+                                          label: const Text('Validar Compra'),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
         );
       },
@@ -118,7 +148,6 @@ class _ValidationFormSheetState extends State<_ValidationFormSheet> {
   DateTime? _fechaCaducidad;
   bool _isSaving = false;
   
-  // Variables para las estrellas
   int _ratingEstado = 0;
   int _ratingAtencion = 0;
 
@@ -148,8 +177,8 @@ class _ValidationFormSheetState extends State<_ValidationFormSheet> {
       recibido: _recibido,
       buenEstado: _buenEstado,
       fechaCaducidad: _fechaCaducidad,
-      calificacionEstado: _ratingEstado, // <-- ENVIAMOS LAS ESTRELLAS
-      calificacionAtencion: _ratingAtencion, // <-- ENVIAMOS LAS ESTRELLAS
+      calificacionEstado: _ratingEstado,
+      calificacionAtencion: _ratingAtencion,
     );
 
     if (mounted) {
@@ -202,6 +231,22 @@ class _ValidationFormSheetState extends State<_ValidationFormSheet> {
             const Text('Validación de Compra', textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             const Text('Para recibir tus puntos, es obligatorio calificar tu experiencia.', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: Colors.grey)),
+            
+            // --- NUEVO: Aviso de 7 días ---
+            const SizedBox(height: 8),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.timer, color: AppColors.warning, size: 16),
+                SizedBox(width: 4),
+                Text(
+                  'Valida antes de 7 días para recibir tus puntos.',
+                  style: TextStyle(fontSize: 12, color: AppColors.warning, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            // ------------------------------
+            
             const SizedBox(height: 20),
             
             SwitchListTile(

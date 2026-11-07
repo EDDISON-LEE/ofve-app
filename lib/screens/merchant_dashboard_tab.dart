@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../widgets/notification_bell.dart'; 
-import '../widgets/currency_ticker.dart'; // <-- NUEVA IMPORTACIÓN
+import '../widgets/currency_ticker.dart'; 
 import 'create_offer_screen.dart';
 import 'merchant_plans_screen.dart';
 import 'merchant_metrics_screen.dart';
@@ -115,7 +115,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
       children: [
         Text(widget.storeName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: AppColors.textDark)),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween, // <-- AÑADIDO PARA SEPARAR
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               children: [
@@ -124,7 +124,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
                 Text(widget.category, style: const TextStyle(fontSize: 14, color: AppColors.primaryPurple, fontWeight: FontWeight.w600)),
               ],
             ),
-            const CurrencyTicker(), // <-- TASA AGREGADA AQUÍ
+            const CurrencyTicker(),
           ],
         ),
         const SizedBox(height: 16),
@@ -132,11 +132,35 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
           children: [
             _buildMiniStat('Visitas', '1,240', Icons.remove_red_eye, AppColors.info),
             const SizedBox(width: 12),
-            _buildMiniStat('Ofertas', '8', Icons.local_offer, AppColors.success),
+            // --- NUEVO: PUNTOS DE REPUTACIÓN ---
+            _buildMiniStat('Reputación', '100 pts', Icons.verified, AppColors.success),
+            // -----------------------------------
             const SizedBox(width: 12),
             _buildMiniStat('Ganancias', '\$ 320', Icons.attach_money, AppColors.warning),
           ],
         ),
+        // --- NUEVO: Alerta de ventas sin validar ---
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.warning.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.info_outline, color: AppColors.warning, size: 16),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Recuerda que si un cliente no valida su compra, tu reputación no sube.',
+                  style: TextStyle(fontSize: 11, color: AppColors.warning, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // --------------------------------------------
       ],
     );
   }
@@ -176,7 +200,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
           imagePath: 'assets/icons/oferta.webp', 
           title: 'Escanear', 
           subtitle: 'Validar Compra', 
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantScannerScreen())) // <-- CORREGIDO
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantScannerScreen()))
         ),
         _buildCard(
           imagePath: 'assets/icons/oferta.webp',

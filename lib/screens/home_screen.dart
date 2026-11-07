@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../controllers/user_controller.dart';
+import '../controllers/location_alert_controller.dart'; // <-- NUEVO: Controlador de Geocercas
 import '../core/theme/app_theme.dart';
 import 'admin_dashboard_screen.dart';
 import 'owner_dashboard_screen.dart';
@@ -15,7 +16,7 @@ import 'client_payment_history_screen.dart';
 import 'client_planned_purchases_screen.dart'; 
 import 'merchant_branches_screen.dart';
 import 'client_pools_screen.dart'; 
-import 'banned_screen.dart'; // <-- NUEVA IMPORTACIÓN
+import 'banned_screen.dart'; 
 
 import 'support_screen.dart';
 import 'merchant_edit_store_screen.dart';
@@ -25,6 +26,7 @@ import 'add_product_screen.dart';
 import 'merchant_animal_requests_screen.dart';
 import 'client_preferences_screen.dart'; 
 
+// --- NUEVO: Añadimos WidgetsBindingObserver para escuchar el ciclo de vida ---
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -32,8 +34,43 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final _userController = UserController();
+  final _locationController = LocationAlertController(); // <-- INSTANCIA DE GEOCERCAS
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this); // <-- Registrar observer de ciclo de vida
+    
+    // Hacemos el primer chequeo de ubicación después de que la UI cargue
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkLocationAlerts();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // <-- Importante: Limpiar observer
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Si el usuario regresa a la app, chequeamos de nuevo su ubicación
+    if (state == AppLifecycleState.resumed) {
+      _checkLocationAlerts();
+    }
+  }
+
+  void _checkLocationAlerts() {
+    // Solo chequeamos si es cliente, no está baneado y el controlador tiene contexto
+    if ((_userController.role == 'user' || _userController.role == 'client') && 
+        !_userController.estadoBaneado) {
+      _locationController.checkProximityAlerts(context);
+    }
+  }
+  // -----------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +85,10 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        // --- NUEVA VALIDACIÓN DE BANEO ---
+        // --- VALIDACIÓN DE BANEO ---
         if (_userController.estadoBaneado) {
           return const BannedScreen();
         }
-        // ---------------------------------
 
         // REDIRECCIÓN POR ROL
         if (_userController.role == 'admin') return const AdminDashboardScreen();

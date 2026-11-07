@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/client_favorites_controller.dart';
 import '../controllers/currency_controller.dart'; 
+import '../widgets/live_viewers_badge.dart'; // <-- NUEVO WIDGET DE PRUEBA SOCIAL
 import 'client_checkout_screen.dart';
 
 class AllOffersController extends ChangeNotifier {
@@ -78,12 +79,10 @@ class AllOffersController extends ChangeNotifier {
   void _applyFilter() {
     List<dynamic> temp = List.from(offers);
 
-    // 1. Filtrar por categoría
     if (selectedCategory != null && selectedCategory != 'Todas') {
       temp = temp.where((o) => o['categoria'] == selectedCategory).toList();
     }
 
-    // 2. Filtrar por texto en tiempo real
     if (searchQuery.isNotEmpty) {
       temp = temp.where((o) => 
         (o['producto_nombre'] ?? '').toString().toLowerCase().contains(searchQuery) ||
@@ -91,7 +90,6 @@ class AllOffersController extends ChangeNotifier {
       ).toList();
     }
 
-    // 3. Ordenar
     if (sortBy == 'precio_menor') {
       temp.sort((a, b) {
         final pA = (a['precio_oferta'] ?? a['precio_regular']) as num;
@@ -131,9 +129,77 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
     super.dispose();
   }
 
+  // --- NUEVO: Método para evaluar si es producto complejo y abrir modal ---
   void _irAlCheckout(Map<String, dynamic> oferta) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => ClientCheckoutScreen(oferta: oferta)));
+    final extra = oferta['servicios_extra'] as Map<String, dynamic>?;
+    
+    // Si tiene servicios extra (repuestos, postventa, etc.), mostramos el detalle enriquecido
+    if (extra != null && extra.isNotEmpty) {
+      _mostrarDetallesComplejos(oferta, extra);
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => ClientCheckoutScreen(oferta: oferta)));
+    }
   }
+
+  void _mostrarDetallesComplejos(Map<String, dynamic> oferta, Map<String, dynamic> extra) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(oferta['producto_nombre'] ?? 'Producto', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(color: AppColors.primaryPurple.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                  child: Text('Condición: ${oferta['condicion'] ?? 'Nuevo'}', style: const TextStyle(color: AppColors.primaryPurple, fontSize: 12, fontWeight: FontWeight.bold)),
+                ),
+                if (oferta['garantia'] != null) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                    child: Text('Garantía: ${oferta['garantia']}', style: const TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold)),
+                  ),
+                ]
+              ],
+            ),
+            const Divider(height: 30),
+            
+            // Lista de beneficios
+            if (extra['repuestos'] == true)
+              const ListTile(leading: Icon(Icons.build, color: AppColors.info), title: Text('Repuestos disponibles'), dense: true),
+            if (extra['postventa'] == true)
+              const ListTile(leading: Icon(Icons.support_agent, color: AppColors.info), title: Text('Servicio Post-Venta'), dense: true),
+            if (extra['financiamiento'] == true)
+              const ListTile(leading: Icon(Icons.credit_card, color: AppColors.warning), title: Text('Opciones de Financiamiento'), dense: true),
+            
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryPurple),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => ClientCheckoutScreen(oferta: oferta)));
+                },
+                child: const Text('Comprar Ahora', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+  // -------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +219,6 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                   onChanged: (val) {
                     _offersController.search(val);
                     
-                    // --- NUEVO: PROMPT "¿VER OTRAS OFERTAS?" ---
                     if (val.length >= 3 && _offersController.filteredOffers.isNotEmpty) {
                       ScaffoldMessenger.of(context).clearSnackBars();
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -282,7 +347,7 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                             padding: const EdgeInsets.all(16),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              childAspectRatio: 0.7, 
+                              childAspectRatio: 0.65, // <-- Ajustado de 0.7 a 0.65 para dar espacio a los nuevos chips
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
                             ),
@@ -305,6 +370,12 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
     final isSponsored = oferta['es_patrocinada'] ?? false; 
     final precioUsd = (oferta['precio_oferta'] ?? oferta['precio_regular'] as num).toDouble();
     final stock = oferta['stock'] ?? 0; 
+    
+    // --- NUEVOS DATOS ---
+    final condicion = oferta['condicion'] ?? 'Nuevo';
+    final garantia = oferta['garantia'];
+    final tieneFinanciamiento = oferta['financiamiento'] ?? false;
+    final isUsado = condicion == 'Usado';
 
     return Container(
       decoration: BoxDecoration(
@@ -336,18 +407,56 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: AppColors.primaryPurple.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                          child: Text(oferta['categoria'] ?? 'General', style: const TextStyle(color: AppColors.primaryPurple, fontSize: 10, fontWeight: FontWeight.bold)),
+                        // Fila de Categoría y Condición
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(color: AppColors.primaryPurple.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                              child: Text(oferta['categoria'] ?? 'General', style: const TextStyle(color: AppColors.primaryPurple, fontSize: 9, fontWeight: FontWeight.bold)),
+                            ),
+                            if (isUsado)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                                child: const Text('USADO', style: TextStyle(color: AppColors.warning, fontSize: 9, fontWeight: FontWeight.bold)),
+                              ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Text(
                           oferta['producto_nombre'] ?? 'Producto',
                           maxLines: 2, overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, height: 1.2),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
+                        
+                        // Badges de Beneficios (Garantía / Financiamiento)
+                        if (garantia != null || tieneFinanciamiento)
+                          Wrap(
+                            spacing: 4,
+                            children: [
+                              if (garantia != null)
+                                Chip(
+                                  label: Text(garantia, style: const TextStyle(fontSize: 8, color: AppColors.success)),
+                                  padding: EdgeInsets.zero,
+                                  visualDensity: VisualDensity.compact,
+                                  backgroundColor: AppColors.success.withOpacity(0.1),
+                                  side: BorderSide.none,
+                                ),
+                              if (tieneFinanciamiento)
+                                Chip(
+                                  label: const Text('Financiable', style: TextStyle(fontSize: 8, color: AppColors.info)),
+                                  padding: EdgeInsets.zero,
+                                  visualDensity: VisualDensity.compact,
+                                  backgroundColor: AppColors.info.withOpacity(0.1),
+                                  side: BorderSide.none,
+                                ),
+                            ],
+                          ),
+                          
+                        const SizedBox(height: 4),
                         Row(
                           children: [
                             if (oferta['precio_oferta'] != null) ...[
@@ -407,6 +516,13 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                     ),
                   ),
                 ),
+
+              // --- NUEVO: PRUEBA SOCIAL EN TIEMPO REAL ---
+              Positioned(
+                bottom: 8,
+                left: 8,
+                child: LiveViewersBadge(offerId: oferta['id'].toString()),
+              ),
               
               // BOTÓN DE FAVORITO
               Positioned(
