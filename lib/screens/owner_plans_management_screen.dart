@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // <-- IMPORTANTE
 import '../core/theme/app_theme.dart';
 import '../controllers/owner_plans_controller.dart';
@@ -130,7 +130,7 @@ class _OwnerPlansManagementScreenState extends State<OwnerPlansManagementScreen>
                           title: Text(plan['nombre'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                           subtitle: Text('\$${plan['precio']} USD / mes', style: const TextStyle(color: AppColors.primaryPurple, fontWeight: FontWeight.bold)),
                           leading: CircleAvatar(
-                            backgroundColor: AppColors.primaryPurple.withOpacity(0.1),
+                            backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.1),
                             child: const Icon(Icons.workspace_premium, color: AppColors.primaryPurple),
                           ),
                           trailing: IconButton(

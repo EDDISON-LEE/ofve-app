@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/voice_offer_controller.dart';
 
@@ -59,7 +59,7 @@ class _VoiceOfferScreenState extends State<VoiceOfferScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       borderRadius: BorderRadius.circular(24),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5))],
                       border: Border.all(color: _voiceController.isListening ? AppColors.primaryPurple : Colors.transparent, width: 2),
                     ),
                     child: SingleChildScrollView(
@@ -97,7 +97,7 @@ class _VoiceOfferScreenState extends State<VoiceOfferScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: (_voiceController.isListening ? AppColors.error : AppColors.primaryPurple).withOpacity(0.4),
+                          color: (_voiceController.isListening ? AppColors.error : AppColors.primaryPurple).withValues(alpha: 0.4),
                           blurRadius: _voiceController.isListening ? 30 : 15,
                           spreadRadius: _voiceController.isListening ? 10 : 0,
                         )

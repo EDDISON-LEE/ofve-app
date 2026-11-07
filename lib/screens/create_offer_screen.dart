@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 import 'package:image_picker/image_picker.dart';
@@ -76,7 +76,7 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: (esError ? AppColors.error : AppColors.success).withOpacity(0.1),
+                  color: (esError ? AppColors.error : AppColors.success).withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/client_announcements_controller.dart';
@@ -64,7 +64,7 @@ class _ClientAnnouncementsScreenState extends State<ClientAnnouncementsScreen> {
                                     Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: AppColors.primaryPurple.withOpacity(0.1),
+                                        color: AppColors.primaryPurple.withValues(alpha: 0.1),
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(Icons.campaign, color: AppColors.primaryPurple, size: 24),

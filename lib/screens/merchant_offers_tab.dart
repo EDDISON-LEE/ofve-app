@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'create_offer_screen.dart';
 
 class MerchantOffersTab extends StatelessWidget {
@@ -18,7 +18,7 @@ class MerchantOffersTab extends StatelessWidget {
           children: [
             // Tarjeta de resumen
             Card(
-              color: const Color(0xFF6B4EFF).withOpacity(0.1),
+              color: const Color(0xFF6B4EFF).withValues(alpha: 0.1),
               child: const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Column(

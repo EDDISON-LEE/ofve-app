@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/client_plan_controller.dart';
 import '../controllers/zones_controller.dart';
@@ -245,7 +245,7 @@ class _ClientPlanPurchaseScreenState extends State<ClientPlanPurchaseScreen> {
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                          decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                           child: Row(
                             children: [
                               const Icon(Icons.check_circle, color: AppColors.success),

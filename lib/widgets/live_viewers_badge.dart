@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../core/theme/app_theme.dart';
+
 
 class LiveViewersBadge extends StatefulWidget {
   final String offerId;
@@ -23,14 +23,17 @@ class _LiveViewersBadgeState extends State<LiveViewersBadge> {
 
   void _joinChannel() {
     final userId = _supabase.auth.currentUser?.id ?? 'anon';
-    
+
     _channel = _supabase.channel('room_${widget.offerId}');
-    
+
     _channel!.onPresenceSync((payload) {
-      final List<Presence> presences = _channel!.presenceState();
+      // FIX API 2.13.2: presenceState() devuelve List<SinglePresenceState>,
+      // no List<Presence>. La longitud sigue siendo el número de
+      // conexiones activas en la sala (mismo comportamiento que antes).
+      final int viewers = _channel!.presenceState().length;
       if (mounted) {
         setState(() {
-          _viewersCount = presences.length;
+          _viewersCount = viewers < 1 ? 1 : viewers;
         });
       }
     }).subscribe((status, error) async {
@@ -56,7 +59,7 @@ class _LiveViewersBadgeState extends State<LiveViewersBadge> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
+        color: Colors.black.withValues(alpha: 0.6), // <-- withOpacity deprecado → withValues
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -66,7 +69,11 @@ class _LiveViewersBadgeState extends State<LiveViewersBadge> {
           const SizedBox(width: 4),
           Text(
             '$_viewersCount personas viendo esto',
-            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),

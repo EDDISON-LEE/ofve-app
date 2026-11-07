@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/currency_controller.dart';
 
@@ -34,9 +34,9 @@ class _CurrencyTickerState extends State<CurrencyTicker> {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Padding ajustado
           decoration: BoxDecoration(
-            color: AppColors.success.withOpacity(0.15),
+            color: AppColors.success.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.success.withOpacity(0.5)),
+            border: Border.all(color: AppColors.success.withValues(alpha: 0.5)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

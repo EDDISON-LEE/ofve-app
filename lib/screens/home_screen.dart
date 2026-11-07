@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../controllers/user_controller.dart';
 import '../controllers/location_alert_controller.dart'; // <-- NUEVO: Controlador de Geocercas
@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primaryPurple.withOpacity(0.4),
+                  color: AppColors.primaryPurple.withValues(alpha: 0.4),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                 )
@@ -175,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             decoration: BoxDecoration(
               gradient: LinearGradient(colors: [
                 AppColors.primaryPurple,
-                AppColors.primaryPurple.withOpacity(0.8)
+                AppColors.primaryPurple.withValues(alpha: 0.8)
               ]),
             ),
             child: Column(
@@ -199,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 Text(
                   _userController.userEmail,
                   style: TextStyle(
-                      color: AppColors.white.withOpacity(0.8), fontSize: 13),
+                      color: AppColors.white.withValues(alpha: 0.8), fontSize: 13),
                 ),
               ],
             ),

@@ -4,6 +4,13 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Permiso de internet (usualmente viene por defecto, pero es bueno asegurarlo) -->
     <uses-permission android:name="android.permission.INTERNET" />
+       
+
+       <!-- Permiso de escritura en galería solo para Android 9 e inferior.
+     Android 10+ usa Scoped Storage vía MediaStore (gal lo maneja sin permiso). -->
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    android:maxSdkVersion="28" />
+
 
     <application
         android:label="ofve_app"

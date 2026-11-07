@@ -29,36 +29,59 @@ class _MerchantPoolsScreenState extends State<MerchantPoolsScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, top: 20, left: 20, right: 20),
-        decoration: const BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom, top: 20, left: 20, right: 20),
+        decoration: const BoxDecoration(
+            color: AppColors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Crear Nuevo Pool', textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text('Crear Nuevo Pool',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 20),
-              TextField(controller: _productNameCtrl, decoration: const InputDecoration(labelText: 'Nombre del Producto (Ej: Caja de 12 Refrescos)', prefixIcon: Icon(Icons.shopping_bag))),
+              TextField(
+                  controller: _productNameCtrl,
+                  decoration: const InputDecoration(
+                      labelText: 'Nombre del Producto (Ej: Caja de 12 Refrescos)',
+                      prefixIcon: Icon(Icons.shopping_bag))),
               const SizedBox(height: 12),
-              TextField(controller: _targetUsersCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Meta de Personas', prefixIcon: Icon(Icons.group))),
+              TextField(
+                  controller: _targetUsersCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                      labelText: 'Meta de Personas', prefixIcon: Icon(Icons.group))),
               const SizedBox(height: 12),
-              TextField(controller: _wholesalePriceCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Precio al Mayor Sugerido (\$)', prefixIcon: Icon(Icons.attach_money))),
+              TextField(
+                  controller: _wholesalePriceCtrl,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                      labelText: 'Precio al Mayor Sugerido (\$)', prefixIcon: Icon(Icons.attach_money))),
               const SizedBox(height: 24),
               SizedBox(
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
+                    // FIX: capturamos messenger antes del await
+                    final messenger = ScaffoldMessenger.of(context);
                     final success = await _poolsController.createPool(
                       productName: _productNameCtrl.text,
                       targetUsers: int.tryParse(_targetUsersCtrl.text) ?? 50,
                       wholesalePrice: double.tryParse(_wholesalePriceCtrl.text) ?? 0.0,
                     );
-                    if (success && mounted) {
+                    if (!mounted) return;
+                    // FIX: guardia temprana SEPARADA para ctx (el analyzer no acepta compound)
+                    if (!ctx.mounted) return;
+                    if (success) {
                       Navigator.pop(ctx);
                       _productNameCtrl.clear();
                       _targetUsersCtrl.clear();
                       _wholesalePriceCtrl.clear();
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Pool creado con éxito!'), backgroundColor: AppColors.success));
+                      messenger.showSnackBar(const SnackBar(
+                          content: Text('¡Pool creado con éxito!'),
+                          backgroundColor: AppColors.success));
                     }
                   },
                   child: const Text('Lanzar Pool'),
@@ -98,7 +121,8 @@ class _MerchantPoolsScreenState extends State<MerchantPoolsScreen> {
                         children: [
                           Icon(Icons.groups, size: 80, color: Colors.grey),
                           SizedBox(height: 16),
-                          Text('No tienes pools activos.', style: TextStyle(fontSize: 18, color: AppColors.textLight)),
+                          Text('No tienes pools activos.',
+                              style: TextStyle(fontSize: 18, color: AppColors.textLight)),
                           Text('¡Crea uno con el botón +!', style: TextStyle(color: Colors.grey)),
                         ],
                       ),
@@ -123,16 +147,31 @@ class _MerchantPoolsScreenState extends State<MerchantPoolsScreen> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Expanded(child: Text(pool['producto_nombre'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-                                    Text(pool['estado'], style: const TextStyle(color: AppColors.primaryPurple, fontSize: 12, fontWeight: FontWeight.bold)),
+                                    Expanded(
+                                        child: Text(pool['producto_nombre'],
+                                            style: const TextStyle(
+                                                fontSize: 18, fontWeight: FontWeight.bold))),
+                                    Text(pool['estado'],
+                                        style: const TextStyle(
+                                            color: AppColors.primaryPurple,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold)),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
-                                Text('Precio Mayorista: \$${pool['precio_mayorista_sugerido']}', style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.bold)),
+                                Text('Precio Mayorista: \$${pool['precio_mayorista_sugerido']}',
+                                    style: const TextStyle(
+                                        color: AppColors.success, fontWeight: FontWeight.bold)),
                                 const SizedBox(height: 16),
-                                LinearProgressIndicator(value: progress > 1.0 ? 1.0 : progress, backgroundColor: Colors.grey[200], color: AppColors.primaryPurple, minHeight: 10, borderRadius: BorderRadius.circular(10)),
+                                LinearProgressIndicator(
+                                    value: progress > 1.0 ? 1.0 : progress,
+                                    backgroundColor: Colors.grey[200],
+                                    color: AppColors.primaryPurple,
+                                    minHeight: 10,
+                                    borderRadius: BorderRadius.circular(10)),
                                 const SizedBox(height: 8),
-                                Text('$current de $meta personas comprometidas', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                                Text('$current de $meta personas comprometidas',
+                                    style: const TextStyle(color: Colors.grey, fontSize: 13)),
                               ],
                             ),
                           ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/theme/app_theme.dart';
 
@@ -107,7 +107,7 @@ class _OwnerUserManagementScreenState extends State<OwnerUserManagementScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: roleColor.withOpacity(0.1),
+                      backgroundColor: roleColor.withValues(alpha: 0.1),
                       child: Icon(Icons.person, color: roleColor),
                     ),
                     title: Text(user['nombre'] ?? 'Sin nombre', style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -135,7 +135,7 @@ class _OwnerUserManagementScreenState extends State<OwnerUserManagementScreen> {
                           ],
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(color: roleColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                            decoration: BoxDecoration(color: roleColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [

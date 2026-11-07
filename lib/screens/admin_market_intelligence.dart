@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminMarketIntelligence extends StatefulWidget {
@@ -77,11 +77,11 @@ class _AdminMarketIntelligenceState extends State<AdminMarketIntelligence> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 4))],
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 4))],
                           ),
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: primaryPurple.withOpacity(0.1),
+                              backgroundColor: primaryPurple.withValues(alpha: 0.1),
                               child: Text('#${index + 1}', style: TextStyle(color: primaryPurple, fontWeight: FontWeight.bold)),
                             ),
                             title: Text(item['termino'].toString().toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),

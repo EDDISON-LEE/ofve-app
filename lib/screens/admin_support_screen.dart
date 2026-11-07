@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class AdminSupportScreen extends StatelessWidget {
   const AdminSupportScreen({super.key});
@@ -28,7 +28,7 @@ class AdminSupportScreen extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
-        leading: CircleAvatar(backgroundColor: color.withOpacity(0.1), child: Icon(Icons.person, color: color)),
+        leading: CircleAvatar(backgroundColor: color.withValues(alpha: 0.1), child: Icon(Icons.person, color: color)),
         title: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +38,7 @@ class AdminSupportScreen extends StatelessWidget {
             Text(mensaje, maxLines: 2, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 8),
             Row(children: [
-              Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(4)), child: Text('Prioridad: $prioridad', style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold))),
+              Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)), child: Text('Prioridad: $prioridad', style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold))),
               const SizedBox(width: 8),
               Text(tiempo, style: const TextStyle(fontSize: 10, color: Colors.grey)),
             ])

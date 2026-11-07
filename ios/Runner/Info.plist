@@ -2,6 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>OfVe necesita guardar los flyers de tus ofertas en tu galería para que los compartas en redes sociales.</string>
+
+
     <key>FlutterDeepLinkingEnabled</key>
 <false/>
 <key>CFBundleURLTypes</key>

@@ -24,21 +24,17 @@ class _ClientPoolsScreenState extends State<ClientPoolsScreen> {
     setState(() => _isLoading = true);
     try {
       final userId = _supabase.auth.currentUser!.id;
-      
       final participaciones = await _supabase
           .from('demanda_participantes')
           .select('demanda_id')
           .eq('usuario_id', userId);
-
       final ids = participaciones.map((p) => p['demanda_id']).toSet().toList();
-
       if (ids.isNotEmpty) {
         final response = await _supabase
             .from('demandas_agrupadas')
             .select('*')
             .inFilter('id', ids)
             .order('fecha_creacion', ascending: false);
-        
         _demandas = response;
       } else {
         _demandas = [];
@@ -50,7 +46,6 @@ class _ClientPoolsScreenState extends State<ClientPoolsScreen> {
     }
   }
 
-  // --- NUEVO MÉTODO DE RESERVA ---
   void _mostrarDialogoReserva(dynamic demanda) {
     final qtyCtrl = TextEditingController(text: '1');
     showDialog(
@@ -74,31 +69,34 @@ class _ClientPoolsScreenState extends State<ClientPoolsScreen> {
           ElevatedButton(
             onPressed: () async {
               final qty = int.tryParse(qtyCtrl.text) ?? 1;
+              // FIX: capturamos el messenger ANTES del await
+              final messenger = ScaffoldMessenger.of(context);
               try {
-                // Buscamos la oferta activa asociada a esta demanda
                 final poolData = await _supabase
                     .from('pools_comunitarios')
                     .select('id')
                     .eq('demanda_id', demanda['id'])
                     .maybeSingle();
-
                 if (poolData == null) throw Exception('La oferta aún no está lista.');
-
-                // Insertamos la reserva
                 await _supabase.from('pools_participantes').insert({
                   'pool_id': poolData['id'],
                   'usuario_id': _supabase.auth.currentUser!.id,
                   'cantidad_comprometida': qty,
                 });
-
-                if (ctx.mounted) {
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Reserva confirmada! El comercio preparará tu pedido.'), backgroundColor: AppColors.success));
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (mounted) {
+                  messenger.showSnackBar(const SnackBar(
+                    content: Text('¡Reserva confirmada! El comercio preparará tu pedido.'),
+                    backgroundColor: AppColors.success,
+                  ));
                 }
               } catch (e) {
-                if (ctx.mounted) {
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al reservar: $e'), backgroundColor: AppColors.error));
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (mounted) {
+                  messenger.showSnackBar(SnackBar(
+                    content: Text('Error al reservar: $e'),
+                    backgroundColor: AppColors.error,
+                  ));
                 }
               }
             },
@@ -157,19 +155,25 @@ class _ClientPoolsScreenState extends State<ClientPoolsScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  demanda['termino_original'].toString().toUpperCase(), 
+                                  demanda['termino_original'].toString().toUpperCase(),
                                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: isOfertaCreada ? AppColors.primaryPurple.withOpacity(0.1) : (isMetaAlcanzada ? AppColors.success.withOpacity(0.1) : AppColors.warning.withOpacity(0.1)),
+                                    color: isOfertaCreada
+                                        ? AppColors.primaryPurple.withValues(alpha: 0.1)
+                                        : (isMetaAlcanzada
+                                            ? AppColors.success.withValues(alpha: 0.1)
+                                            : AppColors.warning.withValues(alpha: 0.1)),
                                     borderRadius: BorderRadius.circular(8)
                                   ),
                                   child: Text(
                                     estado.toUpperCase(),
                                     style: TextStyle(
-                                      color: isOfertaCreada ? AppColors.primaryPurple : (isMetaAlcanzada ? AppColors.success : AppColors.warning),
+                                      color: isOfertaCreada
+                                          ? AppColors.primaryPurple
+                                          : (isMetaAlcanzada ? AppColors.success : AppColors.warning),
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold
                                     ),
@@ -181,14 +185,15 @@ class _ClientPoolsScreenState extends State<ClientPoolsScreen> {
                             LinearProgressIndicator(
                               value: progress > 1.0 ? 1.0 : progress,
                               backgroundColor: Colors.grey[200],
-                              color: isOfertaCreada ? AppColors.primaryPurple : (isMetaAlcanzada ? AppColors.success : AppColors.primaryPurple),
+                              color: isOfertaCreada
+                                  ? AppColors.primaryPurple
+                                  : (isMetaAlcanzada ? AppColors.success : AppColors.primaryPurple),
                               minHeight: 10,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             const SizedBox(height: 8),
-                            Text('$actual de $meta personas buscando este producto.', style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                            
-                            // --- LÓGICA DE ESTADOS VISUALES ---
+                            Text('$actual de $meta personas buscando este producto.',
+                                style: const TextStyle(color: Colors.grey, fontSize: 13)),
                             if (isOfertaCreada) ...[
                               const SizedBox(height: 16),
                               SizedBox(
@@ -197,12 +202,17 @@ class _ClientPoolsScreenState extends State<ClientPoolsScreen> {
                                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryPurple),
                                   onPressed: () => _mostrarDialogoReserva(demanda),
                                   icon: const Icon(Icons.shopping_cart_checkout, color: Colors.white),
-                                  label: const Text('Reservar mi cantidad', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                  label: const Text('Reservar mi cantidad',
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                 ),
                               ),
                             ] else if (isMetaAlcanzada) ...[
                               const SizedBox(height: 16),
-                              const Text('¡Meta alcanzada! Esperando que el comercio active la oferta...', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 12)),
+                              const Text('¡Meta alcanzada! Esperando que el comercio active la oferta...',
+                                  style: TextStyle(
+                                      color: AppColors.success,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12)),
                             ]
                           ],
                         ),

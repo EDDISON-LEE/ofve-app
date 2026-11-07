@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../core/theme/app_theme.dart';
@@ -112,7 +112,7 @@ class _NearbyOffersMapScreenState extends State<NearbyOffersMapScreen> {
                         height: 40,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: AppColors.info.withOpacity(0.2),
+                            color: AppColors.info.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.my_location, color: AppColors.info, size: 24),
@@ -145,7 +145,7 @@ class _NearbyOffersMapScreenState extends State<NearbyOffersMapScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 10))],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 10))],
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,

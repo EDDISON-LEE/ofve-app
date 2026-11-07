@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/owner_config_controller.dart';
 
@@ -34,7 +34,7 @@ class _OwnerConfigScreenState extends State<OwnerConfigScreen> {
                           margin: const EdgeInsets.only(bottom: 20),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withOpacity(0.1),
+                            color: AppColors.error.withValues(alpha: 0.1),
                             border: Border.all(color: AppColors.error),
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -60,7 +60,7 @@ class _OwnerConfigScreenState extends State<OwnerConfigScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.white,
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
                         ),
                         child: Column(
                           children: [

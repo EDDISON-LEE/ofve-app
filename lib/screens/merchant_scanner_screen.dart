@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/merchant_scan_controller.dart';
@@ -162,7 +162,7 @@ class _MerchantScannerScreenState extends State<MerchantScannerScreen> {
           // Indicador de carga
           if (_isProcessing)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: const Center(
                 child: CircularProgressIndicator(color: AppColors.primaryPurple),
               ),

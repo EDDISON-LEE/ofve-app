@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/owner_controller.dart';
@@ -123,7 +123,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]),
+        decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))]),
         child: Column(
           children: [
             Icon(icon, color: color, size: 28),
@@ -141,7 +141,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        decoration: BoxDecoration(color: AppColors.darkCardColor, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: AppColors.darkCardColor.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 4))]),
+        decoration: BoxDecoration(color: AppColors.darkCardColor, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: AppColors.darkCardColor.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 4))]),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -149,7 +149,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
             const SizedBox(height: 12),
             Text(title, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.white, fontSize: 12, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            Text(subtitle, textAlign: TextAlign.center, style: TextStyle(color: AppColors.white.withOpacity(0.5), fontSize: 9)),
+            Text(subtitle, textAlign: TextAlign.center, style: TextStyle(color: AppColors.white.withValues(alpha: 0.5), fontSize: 9)),
           ],
         ),
       ),

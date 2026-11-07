@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -177,7 +177,7 @@ class _AdminValidationScreenState extends State<AdminValidationScreen> {
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(color: primaryPurple.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                  decoration: BoxDecoration(color: primaryPurple.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                                   child: Text(tipo, style: TextStyle(color: primaryPurple, fontSize: 10, fontWeight: FontWeight.bold)),
                                 )
                               ],
@@ -250,7 +250,7 @@ class _AdminValidationScreenState extends State<AdminValidationScreen> {
         hasDoc ? label : '$label (Falta)',
         style: TextStyle(color: hasDoc ? Colors.black87 : Colors.orange),
       ),
-      backgroundColor: hasDoc ? Colors.red.withOpacity(0.05) : Colors.orange.withOpacity(0.1),
+      backgroundColor: hasDoc ? Colors.red.withValues(alpha: 0.05) : Colors.orange.withValues(alpha: 0.1),
       onPressed: () => _verDocumento(path, label),
     );
   }

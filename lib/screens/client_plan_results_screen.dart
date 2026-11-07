@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/client_plan_controller.dart';
@@ -130,7 +130,7 @@ class _ClientPlanResultsScreenState extends State<ClientPlanResultsScreen> {
             decoration: BoxDecoration(
               color: AppColors.success, 
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: AppColors.success.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))]
+              boxShadow: [BoxShadow(color: AppColors.success.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 5))]
             ),
             child: Column(
               children: [

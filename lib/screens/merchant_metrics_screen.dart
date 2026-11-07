@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../core/theme/app_theme.dart';
@@ -101,7 +101,7 @@ class _MerchantMetricsScreenState extends State<MerchantMetricsScreen> {
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(colors: [AppColors.darkCardColor, Color(0xFF3D3785)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                             borderRadius: BorderRadius.circular(24),
-                            boxShadow: [BoxShadow(color: AppColors.darkCardColor.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+                            boxShadow: [BoxShadow(color: AppColors.darkCardColor.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,7 +118,7 @@ class _MerchantMetricsScreenState extends State<MerchantMetricsScreen> {
                               const SizedBox(height: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(color: AppColors.success.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+                                decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -139,7 +139,7 @@ class _MerchantMetricsScreenState extends State<MerchantMetricsScreen> {
                           children: [
                             Container(
                               padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))]),
+                              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))]),
                               child: Column(
                                 children: [
                                   const Icon(Icons.shopping_bag, color: AppColors.info, size: 24),
@@ -152,7 +152,7 @@ class _MerchantMetricsScreenState extends State<MerchantMetricsScreen> {
                             const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))]),
+                              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))]),
                               child: Column(
                                 children: [
                                   const Icon(Icons.local_offer, color: AppColors.warning, size: 24),
@@ -171,7 +171,7 @@ class _MerchantMetricsScreenState extends State<MerchantMetricsScreen> {
                   const SizedBox(height: 30),
                   Container(
                     padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 5))]),
+                    decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15, offset: const Offset(0, 5))]),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -220,9 +220,9 @@ class _MerchantMetricsScreenState extends State<MerchantMetricsScreen> {
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 10),
-                          decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 2))]),
+                          decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))]),
                           child: ListTile(
-                            leading: CircleAvatar(backgroundColor: AppColors.success.withOpacity(0.1), child: const Icon(Icons.check, color: AppColors.success)),
+                            leading: CircleAvatar(backgroundColor: AppColors.success.withValues(alpha: 0.1), child: const Icon(Icons.check, color: AppColors.success)),
                             title: Text('Orden #${venta['id'].toString().substring(0, 6).toUpperCase()}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                             subtitle: Text('$fechaFormateada • Pago Móvil/Cash', style: const TextStyle(fontSize: 11)),
                             trailing: Text('\$${(venta['total_pagado'] as num).toStringAsFixed(2)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.success)),
@@ -234,7 +234,7 @@ class _MerchantMetricsScreenState extends State<MerchantMetricsScreen> {
                   const SizedBox(height: 30),
                   Container(
                     padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(color: const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.warning.withOpacity(0.3))),
+                    decoration: BoxDecoration(color: const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.warning.withValues(alpha: 0.3))),
                     child: Row(
                       children: [
                         const Icon(Icons.rocket_launch, color: Colors.deepOrange, size: 40),

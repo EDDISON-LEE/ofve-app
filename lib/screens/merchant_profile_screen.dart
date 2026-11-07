@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../core/theme/app_theme.dart';
@@ -139,7 +139,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(16), 
-              decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), shape: BoxShape.circle), 
+              decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), shape: BoxShape.circle), 
               child: const Icon(Icons.verified, color: Colors.green, size: 60)
             ),
             const SizedBox(height: 24),
@@ -264,7 +264,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: _profileController.latitud != null ? AppColors.success.withOpacity(0.1) : AppColors.white,
+                              color: _profileController.latitud != null ? AppColors.success.withValues(alpha: 0.1) : AppColors.white,
                               border: Border.all(color: _profileController.latitud != null ? AppColors.success : Colors.grey.shade300),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -388,7 +388,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
       child: Container(
         height: 100,
         decoration: BoxDecoration(
-          color: hasFile ? AppColors.success.withOpacity(0.1) : AppColors.white, 
+          color: hasFile ? AppColors.success.withValues(alpha: 0.1) : AppColors.white, 
           border: Border.all(color: hasFile ? AppColors.success : Colors.grey.shade300), 
           borderRadius: BorderRadius.circular(12)
         ),

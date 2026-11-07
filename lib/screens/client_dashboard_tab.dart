@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../controllers/client_controller.dart';
@@ -122,7 +122,7 @@ class _ClientDashboardTabState extends State<ClientDashboardTab> {
                 height: 400,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.curveColor.withOpacity(0.8),
+                  color: AppColors.curveColor.withValues(alpha: 0.8),
                 ),
               ),
             ),
@@ -247,7 +247,7 @@ class _ClientDashboardTabState extends State<ClientDashboardTab> {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(30),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: TextField(
         controller: _searchController,
@@ -298,10 +298,10 @@ class _ClientDashboardTabState extends State<ClientDashboardTab> {
           filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.darkCardColor.withOpacity(0.85),
+              color: AppColors.darkCardColor.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.white.withOpacity(0.15), width: 1),
-              boxShadow: [BoxShadow(color: AppColors.darkCardColor.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 4))],
+              border: Border.all(color: AppColors.white.withValues(alpha: 0.15), width: 1),
+              boxShadow: [BoxShadow(color: AppColors.darkCardColor.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 4))],
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -310,7 +310,7 @@ class _ClientDashboardTabState extends State<ClientDashboardTab> {
                 const SizedBox(height: 8),
                 Text(title, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.white, fontSize: 11, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
-                Text(subtitle, textAlign: TextAlign.center, style: TextStyle(color: AppColors.white.withOpacity(0.6), fontSize: 9)),
+                Text(subtitle, textAlign: TextAlign.center, style: TextStyle(color: AppColors.white.withValues(alpha: 0.6), fontSize: 9)),
               ],
             ),
           ),
@@ -355,7 +355,7 @@ class _ClientDashboardTabState extends State<ClientDashboardTab> {
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))],
                   ),
                   child: Material(
                     color: Colors.transparent,
@@ -400,7 +400,7 @@ class _ClientDashboardTabState extends State<ClientDashboardTab> {
                                         width: double.infinity,
                                         padding: const EdgeInsets.symmetric(vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: AppColors.primaryPurple.withOpacity(0.1),
+                                          color: AppColors.primaryPurple.withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: const Text('Comprar', textAlign: TextAlign.center, style: TextStyle(color: AppColors.primaryPurple, fontSize: 10, fontWeight: FontWeight.bold)),
@@ -420,9 +420,9 @@ class _ClientDashboardTabState extends State<ClientDashboardTab> {
                               child: Container(
                                 padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  color: AppColors.white.withOpacity(0.9),
+                                  color: AppColors.white.withValues(alpha: 0.9),
                                   shape: BoxShape.circle,
-                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
+                                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
                                 ),
                                 child: Icon(
                                   isFav ? Icons.favorite : Icons.favorite_border,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'; // <-- IMPORTANTE
 import '../core/theme/app_theme.dart';
 import '../controllers/purchase_controller.dart';
@@ -157,7 +157,7 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]),
+                  decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))]),
                   child: Row(
                     children: [
                       ClipRRect(
@@ -217,7 +217,7 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
                           labelText: 'Código del Cupón',
                           prefixIcon: const Icon(Icons.local_activity),
                           filled: true,
-                          fillColor: _cuponAplicado ? Colors.green.withOpacity(0.1) : AppColors.white,
+                          fillColor: _cuponAplicado ? Colors.green.withValues(alpha: 0.1) : AppColors.white,
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),

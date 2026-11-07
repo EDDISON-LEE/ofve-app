@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -263,7 +263,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
         decoration: BoxDecoration(
           border: Border.all(color: file != null ? Colors.green : Colors.grey),
           borderRadius: BorderRadius.circular(8),
-          color: file != null ? Colors.green.withOpacity(0.1) : null,
+          color: file != null ? Colors.green.withValues(alpha: 0.1) : null,
         ),
         child: Row(
           children: [

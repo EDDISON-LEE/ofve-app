@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/merchant_earnings_controller.dart';
@@ -47,7 +47,7 @@ class _MerchantEarningsScreenState extends State<MerchantEarningsScreen> {
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(24),
-                          boxShadow: [BoxShadow(color: AppColors.darkCardColor.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+                          boxShadow: [BoxShadow(color: AppColors.darkCardColor.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +104,7 @@ class _MerchantEarningsScreenState extends State<MerchantEarningsScreen> {
                               child: ListTile(
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 leading: CircleAvatar(
-                                  backgroundColor: AppColors.success.withOpacity(0.1),
+                                  backgroundColor: AppColors.success.withValues(alpha: 0.1),
                                   child: const Icon(Icons.attach_money, color: AppColors.success),
                                 ),
                                 title: Text('Venta a $clientName', style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -132,7 +132,7 @@ class _MerchantEarningsScreenState extends State<MerchantEarningsScreen> {
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

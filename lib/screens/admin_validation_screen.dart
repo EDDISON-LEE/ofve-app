@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_theme.dart';
@@ -69,7 +69,7 @@ class _AdminValidationScreenState extends State<AdminValidationScreen> {
                                 if (iaFallo) ...[
                                   Container(
                                     padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), border: Border.all(color: AppColors.warning), borderRadius: BorderRadius.circular(8)),
+                                    decoration: BoxDecoration(color: AppColors.warning.withValues(alpha: 0.1), border: Border.all(color: AppColors.warning), borderRadius: BorderRadius.circular(8)),
                                     child: Row(
                                       children: [
                                         const Icon(Icons.warning_amber_rounded, color: AppColors.warning),
@@ -82,7 +82,7 @@ class _AdminValidationScreenState extends State<AdminValidationScreen> {
                                 ] else if (iaData != null && iaData['exitoso'] == true) ...[
                                   Container(
                                     padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), border: Border.all(color: AppColors.success), borderRadius: BorderRadius.circular(8)),
+                                    decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), border: Border.all(color: AppColors.success), borderRadius: BorderRadius.circular(8)),
                                     child: const Row(
                                       children: [
                                         Icon(Icons.check_circle, color: AppColors.success),

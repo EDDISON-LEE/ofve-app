@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/theme/app_theme.dart';
@@ -82,7 +82,7 @@ class _ClientPaymentHistoryScreenState extends State<ClientPaymentHistoryScreen>
                       child: ListTile(
                         contentPadding: const EdgeInsets.all(16),
                         leading: CircleAvatar(
-                          backgroundColor: statusColor.withOpacity(0.1),
+                          backgroundColor: statusColor.withValues(alpha: 0.1),
                           child: Icon(Icons.receipt_long, color: statusColor),
                         ),
                         title: Text('Plan: ${sol['plan_solicitado']}', style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -98,7 +98,7 @@ class _ClientPaymentHistoryScreenState extends State<ClientPaymentHistoryScreen>
                         ),
                         trailing: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                          decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                           child: Text(statusText, style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold)),
                         ),
                       ),

@@ -26,21 +26,28 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
         title: const Text('Nueva Categoría'),
         content: TextField(
           controller: _nameCtrl,
-          decoration: const InputDecoration(labelText: 'Nombre de la categoría', prefixIcon: Icon(Icons.category)),
+          decoration: const InputDecoration(
+              labelText: 'Nombre de la categoría', prefixIcon: Icon(Icons.category)),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () async {
+              // FIX: capturamos messenger del State ANTES del await
+              final messenger = ScaffoldMessenger.of(context);
               final success = await _categoriesController.addCategory(_nameCtrl.text);
-              if (ctx.mounted) {
-                Navigator.pop(ctx);
-                _nameCtrl.clear();
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Categoría agregada'), backgroundColor: AppColors.success));
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al agregar (puede que ya exista)'), backgroundColor: AppColors.error));
-                }
+              if (!mounted) return;
+              if (!ctx.mounted) return;
+              Navigator.pop(ctx);
+              _nameCtrl.clear();
+              if (success) {
+                messenger.showSnackBar(const SnackBar(
+                    content: Text('Categoría agregada'),
+                    backgroundColor: AppColors.success));
+              } else {
+                messenger.showSnackBar(const SnackBar(
+                    content: Text('Error al agregar (puede que ya exista)'),
+                    backgroundColor: AppColors.error));
               }
             },
             child: const Text('Agregar'),
@@ -64,7 +71,8 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
             child: const Icon(Icons.add, color: AppColors.white),
           ),
           body: _categoriesController.isLoading
-              ? const Center(child: CircularProgressIndicator(color: AppColors.primaryPurple))
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.primaryPurple))
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: _categoriesController.categories.length,
@@ -72,26 +80,31 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                     final cat = _categoriesController.categories[index];
                     return Card(
                       margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape:
+                          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: AppColors.primaryPurple.withOpacity(0.1),
+                          backgroundColor: AppColors.primaryPurple.withValues(alpha: 0.1),
                           child: const Icon(Icons.category, color: AppColors.primaryPurple),
                         ),
-                        title: Text(cat['nombre'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                        title: Text(cat['nombre'],
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: AppColors.error),
                           onPressed: () {
-                            // Confirmación antes de borrar
                             showDialog(
                               context: context,
                               builder: (ctx) => AlertDialog(
                                 title: const Text('Eliminar Categoría'),
-                                content: Text('¿Estás seguro que deseas eliminar "${cat['nombre']}"?'),
+                                content: Text(
+                                    '¿Estás seguro que deseas eliminar "${cat['nombre']}"?'),
                                 actions: [
-                                  TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+                                  TextButton(
+                                      onPressed: () => Navigator.pop(ctx),
+                                      child: const Text('Cancelar')),
                                   ElevatedButton(
-                                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.error),
                                     onPressed: () {
                                       Navigator.pop(ctx);
                                       _categoriesController.deleteCategory(cat['id']);

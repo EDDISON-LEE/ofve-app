@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/theme/app_theme.dart';
 
@@ -77,7 +77,7 @@ class _MerchantWholesaleOffersScreenState extends State<MerchantWholesaleOffersS
                                 Text(offer['producto_nombre'].toString().toUpperCase(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(color: isActivo ? AppColors.success.withOpacity(0.1) : Colors.grey.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                  decoration: BoxDecoration(color: isActivo ? AppColors.success.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                                   child: Text(offer['estado'], style: TextStyle(color: isActivo ? AppColors.success : Colors.grey, fontSize: 10, fontWeight: FontWeight.bold)),
                                 )
                               ],

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/account_settings_controller.dart';
 
@@ -122,9 +122,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [AppColors.primaryPurple, AppColors.primaryPurple.withOpacity(0.7)]),
+                    gradient: LinearGradient(colors: [AppColors.primaryPurple, AppColors.primaryPurple.withValues(alpha: 0.7)]),
                     borderRadius: BorderRadius.circular(24),
-                    boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+                    boxShadow: [BoxShadow(color: AppColors.primaryPurple.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
                   ),
                   child: Column(
                     children: [
@@ -140,7 +140,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       ),
                       Text(
                         _accountController.email,
-                        style: TextStyle(color: AppColors.white.withOpacity(0.8), fontSize: 14),
+                        style: TextStyle(color: AppColors.white.withValues(alpha: 0.8), fontSize: 14),
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -148,7 +148,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
+                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
                             child: Text(
                               _accountController.rol.toUpperCase(),
                               style: const TextStyle(color: AppColors.white, fontSize: 11, fontWeight: FontWeight.bold),
@@ -157,7 +157,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
+                            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
                             child: Text(
                               '${_accountController.puntos} pts',
                               style: const TextStyle(color: AppColors.white, fontSize: 11, fontWeight: FontWeight.bold),
@@ -179,7 +179,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
                   child: Column(
                     children: [
@@ -233,7 +233,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
                   child: Column(
                     children: [
@@ -269,7 +269,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                    border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

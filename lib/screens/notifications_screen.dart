@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/notifications_controller.dart';
@@ -64,7 +64,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       },
                       child: Card(
                         margin: const EdgeInsets.only(bottom: 12),
-                        color: isRead ? Colors.white : AppColors.primaryPurple.withOpacity(0.05),
+                        color: isRead ? Colors.white : AppColors.primaryPurple.withValues(alpha: 0.05),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                           side: isRead ? BorderSide.none : const BorderSide(color: AppColors.primaryPurple, width: 1),
@@ -72,7 +72,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           leading: CircleAvatar(
-                            backgroundColor: iconColor.withOpacity(0.1),
+                            backgroundColor: iconColor.withValues(alpha: 0.1),
                             child: Icon(iconData, color: iconColor),
                           ),
                           title: Text(notif['titulo'], style: TextStyle(fontWeight: isRead ? FontWeight.w500 : FontWeight.bold)),

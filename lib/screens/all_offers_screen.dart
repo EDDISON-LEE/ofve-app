@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/client_favorites_controller.dart';
@@ -158,14 +158,14 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(color: AppColors.primaryPurple.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: AppColors.primaryPurple.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                   child: Text('Condición: ${oferta['condicion'] ?? 'Nuevo'}', style: const TextStyle(color: AppColors.primaryPurple, fontSize: 12, fontWeight: FontWeight.bold)),
                 ),
                 if (oferta['garantia'] != null) ...[
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                     child: Text('Garantía: ${oferta['garantia']}', style: const TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ]
@@ -382,7 +382,7 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         border: isSponsored ? Border.all(color: Colors.amber, width: 2) : null, 
-        boxShadow: [BoxShadow(color: isSponsored ? Colors.amber.withOpacity(0.2) : Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: isSponsored ? Colors.amber.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Material(
         color: Colors.transparent,
@@ -413,13 +413,13 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(color: AppColors.primaryPurple.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                              decoration: BoxDecoration(color: AppColors.primaryPurple.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
                               child: Text(oferta['categoria'] ?? 'General', style: const TextStyle(color: AppColors.primaryPurple, fontSize: 9, fontWeight: FontWeight.bold)),
                             ),
                             if (isUsado)
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                                decoration: BoxDecoration(color: AppColors.warning.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
                                 child: const Text('USADO', style: TextStyle(color: AppColors.warning, fontSize: 9, fontWeight: FontWeight.bold)),
                               ),
                           ],
@@ -442,7 +442,7 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                                   label: Text(garantia, style: const TextStyle(fontSize: 8, color: AppColors.success)),
                                   padding: EdgeInsets.zero,
                                   visualDensity: VisualDensity.compact,
-                                  backgroundColor: AppColors.success.withOpacity(0.1),
+                                  backgroundColor: AppColors.success.withValues(alpha: 0.1),
                                   side: BorderSide.none,
                                 ),
                               if (tieneFinanciamiento)
@@ -450,7 +450,7 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                                   label: const Text('Financiable', style: TextStyle(fontSize: 8, color: AppColors.info)),
                                   padding: EdgeInsets.zero,
                                   visualDensity: VisualDensity.compact,
-                                  backgroundColor: AppColors.info.withOpacity(0.1),
+                                  backgroundColor: AppColors.info.withValues(alpha: 0.1),
                                   side: BorderSide.none,
                                 ),
                             ],
@@ -533,9 +533,9 @@ class _AllOffersScreenState extends State<AllOffersScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.white.withOpacity(0.9),
+                      color: AppColors.white.withValues(alpha: 0.9),
                       shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
                     ),
                     child: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? AppColors.error : Colors.grey, size: 20),
                   ),

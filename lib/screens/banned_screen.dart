@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/theme/app_theme.dart';
 
@@ -116,7 +116,7 @@ class _BannedScreenState extends State<BannedScreen> {
               if (isPending) ...[
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.warning)),
+                  decoration: BoxDecoration(color: AppColors.warning.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.warning)),
                   child: const Column(
                     children: [
                       Icon(Icons.hourglass_top, color: AppColors.warning, size: 30),
@@ -130,7 +130,7 @@ class _BannedScreenState extends State<BannedScreen> {
               ] else if (isRejected) ...[
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.error)),
+                  decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.error)),
                   child: const Column(
                     children: [
                       Icon(Icons.cancel, color: AppColors.error, size: 30),

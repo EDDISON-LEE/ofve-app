@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../widgets/notification_bell.dart'; 
 import '../widgets/currency_ticker.dart'; 
@@ -50,7 +50,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
         ),
         Positioned(
           top: -150, left: -100,
-          child: Container(width: 400, height: 400, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.curveColor.withOpacity(0.8))),
+          child: Container(width: 400, height: 400, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.curveColor.withValues(alpha: 0.8))),
         ),
         SafeArea(
           child: SingleChildScrollView(
@@ -93,7 +93,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
               decoration: BoxDecoration(
                 color: Colors.amber, 
                 borderRadius: BorderRadius.circular(20), 
-                boxShadow: [BoxShadow(color: Colors.amber.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4))]
+                boxShadow: [BoxShadow(color: Colors.amber.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 4))]
               ),
               child: Row(
                 children: [
@@ -144,7 +144,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.warning.withOpacity(0.1),
+            color: AppColors.warning.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Row(
@@ -172,7 +172,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
         decoration: BoxDecoration(
           color: AppColors.white, 
           borderRadius: BorderRadius.circular(12), 
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))]
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))]
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,7 +288,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
         decoration: BoxDecoration(
           color: AppColors.darkCardColor, 
           borderRadius: BorderRadius.circular(16), 
-          boxShadow: [BoxShadow(color: AppColors.darkCardColor.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 4))]
+          boxShadow: [BoxShadow(color: AppColors.darkCardColor.withValues(alpha: 0.2), blurRadius: 8, offset: const Offset(0, 4))]
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -297,7 +297,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
             const SizedBox(height: 8),
             Text(title, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.white, fontSize: 11, fontWeight: FontWeight.w600)),
             const SizedBox(height: 2),
-            Text(subtitle, textAlign: TextAlign.center, style: TextStyle(color: AppColors.white.withOpacity(0.5), fontSize: 9)),
+            Text(subtitle, textAlign: TextAlign.center, style: TextStyle(color: AppColors.white.withValues(alpha: 0.5), fontSize: 9)),
           ],
         ),
       ),
@@ -311,9 +311,9 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [AppColors.primaryPurple, AppColors.primaryPurple.withOpacity(0.7)]),
+          gradient: LinearGradient(colors: [AppColors.primaryPurple, AppColors.primaryPurple.withValues(alpha: 0.7)]),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: AppColors.primaryPurple.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Row(
           children: [

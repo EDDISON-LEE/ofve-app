@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/admin_broadcast_controller.dart';
@@ -61,7 +61,7 @@ class _AdminBroadcastScreenState extends State<AdminBroadcastScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -126,7 +126,7 @@ class _AdminBroadcastScreenState extends State<AdminBroadcastScreen> {
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(16),
                           leading: CircleAvatar(
-                            backgroundColor: isActive ? AppColors.success.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                            backgroundColor: isActive ? AppColors.success.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.1),
                             child: Icon(
                               isActive ? Icons.campaign : Icons.campaign_outlined, 
                               color: isActive ? AppColors.success : Colors.grey

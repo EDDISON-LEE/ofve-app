@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
@@ -194,7 +194,7 @@ class _AsistenteIAScreenState extends State<AsistenteIAScreen> {
                         bottomLeft: isUser ? const Radius.circular(16) : const Radius.circular(0),
                         bottomRight: isUser ? const Radius.circular(0) : const Radius.circular(16),
                       ),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 5)],
                     ),
                     child: Text(
                       msg['text']!,

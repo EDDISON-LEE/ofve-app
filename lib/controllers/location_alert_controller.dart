@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart'; // <-- NUEVO
@@ -72,7 +72,7 @@ class LocationAlertController extends ChangeNotifier {
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: AppColors.info.withOpacity(0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: AppColors.info.withValues(alpha: 0.1), shape: BoxShape.circle),
               child: const Icon(Icons.navigation, color: AppColors.info, size: 40),
             ),
             const SizedBox(height: 16),
@@ -116,7 +116,7 @@ class LocationAlertController extends ChangeNotifier {
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: AppColors.primaryPurple.withOpacity(0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: AppColors.primaryPurple.withValues(alpha: 0.1), shape: BoxShape.circle),
               child: const Icon(Icons.location_on, color: AppColors.primaryPurple, size: 40),
             ),
             const SizedBox(height: 16),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PlanificarCompraScreen extends StatefulWidget {
@@ -319,7 +319,7 @@ class PlanResultsScreen extends StatelessWidget {
                 children: [
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: primaryPurple.withOpacity(0.1),
+                      backgroundColor: primaryPurple.withValues(alpha: 0.1),
                       child: Icon(Icons.store, color: primaryPurple),
                     ),
                     title: Text(oferta['nombre_comercio'], style: const TextStyle(fontWeight: FontWeight.bold)),

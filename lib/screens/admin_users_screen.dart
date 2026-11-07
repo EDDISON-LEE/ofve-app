@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/admin_users_controller.dart';
 
@@ -79,7 +79,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                   leading: CircleAvatar(
-                                    backgroundColor: isBanned ? AppColors.error.withOpacity(0.1) : roleColor.withOpacity(0.1),
+                                    backgroundColor: isBanned ? AppColors.error.withValues(alpha: 0.1) : roleColor.withValues(alpha: 0.1),
                                     child: Icon(
                                       isBanned ? Icons.block : Icons.person, 
                                       color: isBanned ? AppColors.error : roleColor
@@ -95,7 +95,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                         children: [
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                            decoration: BoxDecoration(color: roleColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                                            decoration: BoxDecoration(color: roleColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
                                             child: Text(role.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: roleColor)),
                                           ),
                                           const SizedBox(width: 8),

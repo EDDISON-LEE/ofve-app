@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/client_points_controller.dart';
@@ -71,9 +71,9 @@ class _ClientPointsScreenState extends State<ClientPointsScreen> {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: [AppColors.primaryPurple, AppColors.primaryPurple.withOpacity(0.7)]),
+                          gradient: LinearGradient(colors: [AppColors.primaryPurple, AppColors.primaryPurple.withValues(alpha: 0.7)]),
                           borderRadius: BorderRadius.circular(24),
-                          boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+                          boxShadow: [BoxShadow(color: AppColors.primaryPurple.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
                         ),
                         child: Column(
                           children: [
@@ -110,7 +110,7 @@ class _ClientPointsScreenState extends State<ClientPointsScreen> {
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(colors: [Colors.amber, Colors.orange]),
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [BoxShadow(color: Colors.amber.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 8))],
+                            boxShadow: [BoxShadow(color: Colors.amber.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 8))],
                           ),
                           child: Column(
                             children: [
@@ -158,7 +158,7 @@ class _ClientPointsScreenState extends State<ClientPointsScreen> {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               child: ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor: isPositive ? AppColors.success.withOpacity(0.1) : AppColors.error.withOpacity(0.1),
+                                  backgroundColor: isPositive ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1),
                                   child: Icon(isPositive ? Icons.add : Icons.remove, color: isPositive ? AppColors.success : AppColors.error),
                                 ),
                                 title: Text(item['motivo'], style: const TextStyle(fontWeight: FontWeight.w500)),

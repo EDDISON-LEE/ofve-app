@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/theme/app_theme.dart';
@@ -70,7 +70,7 @@ class _ClientPlannedPurchasesScreenState extends State<ClientPlannedPurchasesScr
                                 Text('Plan del: $fechaStr', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(color: AppColors.info.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                                  decoration: BoxDecoration(color: AppColors.info.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
                                   child: Text(plan['estado'], style: const TextStyle(color: AppColors.info, fontSize: 10, fontWeight: FontWeight.bold)),
                                 ),
                               ],

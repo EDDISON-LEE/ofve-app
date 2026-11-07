@@ -57,6 +57,7 @@ class OfferController extends ChangeNotifier {
     required int stock,
     required Uint8List imageBytes, 
     String? solicitudAnimalId,
+    DateTime? fechaCaducidad, // <-- NUEVO: parámetro de caducidad
   }) async {
     isLoading = true;
     errorMessage = null;
@@ -96,11 +97,15 @@ class OfferController extends ChangeNotifier {
             'estado': 'Activa',
             'fecha_inicio': DateTime.now().toIso8601String(),
             'fecha_fin': DateTime.now().add(const Duration(days: 7)).toIso8601String(),
+            // <-- NUEVO: guardar caducidad si es perecedero
+            'fecha_caducidad': fechaCaducidad != null
+                ? fechaCaducidad.toIso8601String().split('T').first
+                : null,
           })
           .select('id')
           .single();
 
-      // --- NUEVO: GENERAR EMBEDDING IA PARA BÚSQUEDA SEMÁNTICA ---
+      // --- GENERAR EMBEDDING IA PARA BÚSQUEDA SEMÁNTICA ---
       try {
         await _supabase.functions.invoke('generate-offer-embedding', body: {
           'offer_id': inserted['id'],
@@ -110,7 +115,6 @@ class OfferController extends ChangeNotifier {
       } catch (e) {
         debugPrint('⚠️ Error generando embedding IA: $e');
       }
-      // -----------------------------------------------------------
 
       if (solicitudAnimalId != null) {
         try {
@@ -164,7 +168,7 @@ class OfferController extends ChangeNotifier {
         throw Exception('Error al subir la imagen.');
       }
 
-      // MODIFICADO: Agregamos .select('id').single() para obtener el ID del inventario
+      // Mantiene select('id').single() para obtener ID del inventario
       final insertedInv = await _supabase.from('ofertas').insert({
         'comercio_id': comercioId,
         'producto_nombre': nombre.trim(),
@@ -179,7 +183,7 @@ class OfferController extends ChangeNotifier {
         'fecha_inicio': DateTime.now().toIso8601String(),
       }).select('id').single();
 
-      // --- NUEVO: GENERAR EMBEDDING IA TAMBIÉN PARA EL INVENTARIO ---
+      // --- GENERAR EMBEDDING IA TAMBIÉN PARA EL INVENTARIO ---
       try {
         await _supabase.functions.invoke('generate-offer-embedding', body: {
           'offer_id': insertedInv['id'],
@@ -189,7 +193,6 @@ class OfferController extends ChangeNotifier {
       } catch (e) {
         debugPrint('⚠️ Error generando embedding IA en inventario: $e');
       }
-      // --------------------------------------------------------------
 
       return true;
     } catch (e) {

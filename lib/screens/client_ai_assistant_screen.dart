@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/client_ai_controller.dart';
 import 'client_checkout_screen.dart';
@@ -71,7 +71,7 @@ class _ClientAiAssistantScreenState extends State<ClientAiAssistantScreen> {
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(0), topRight: Radius.circular(16), bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)
                           ),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
                         ),
                         child: const Text(
                           '¡Hola! Soy tu asistente personal. ¿Qué estás buscando o qué planes tienes hoy? Dime tu presupuesto y te armaré una recomendación perfecta.',
@@ -104,7 +104,7 @@ class _ClientAiAssistantScreenState extends State<ClientAiAssistantScreen> {
                               child: Container(
                                 padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryPurple.withOpacity(0.1),
+                                  color: AppColors.primaryPurple.withValues(alpha: 0.1),
                                   borderRadius: const BorderRadius.only(
                                     topLeft: Radius.circular(16), topRight: Radius.circular(0), bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)
                                   ),
@@ -125,7 +125,7 @@ class _ClientAiAssistantScreenState extends State<ClientAiAssistantScreen> {
                             decoration: BoxDecoration(
                               color: AppColors.white,
                               borderRadius: BorderRadius.circular(16),
-                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))],
                             ),
                             child: ListTile(
                               contentPadding: const EdgeInsets.all(12),
@@ -159,7 +159,7 @@ class _ClientAiAssistantScreenState extends State<ClientAiAssistantScreen> {
                 padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 16, right: 16, top: 16),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5))],
                 ),
                 child: Row(
                   children: [
