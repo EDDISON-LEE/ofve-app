@@ -10,6 +10,7 @@ import 'owner_settings_screen.dart';
 import 'owner_plans_management_screen.dart';
 import 'owner_audit_screen.dart'; 
 import 'owner_financial_screen.dart'; // <-- NUEVA IMPORTACIÓN
+import 'admin_analytics_screen.dart'; // <-- NUEVA IMPORTACIÓN
 
 class OwnerDashboardScreen extends StatefulWidget {
   const OwnerDashboardScreen({super.key});
@@ -75,6 +76,12 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                             subtitle: 'Logs Globales', 
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OwnerAuditScreen()))
                           ),
+                          _buildModuleCard(
+  icon: Icons.insert_chart, 
+  title: 'Analítica', 
+  subtitle: 'Métricas y Gráficos', 
+  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminAnalyticsScreen()))
+),
                           
                           // TARJETA DE INGRESOS CONECTADA
                           _buildModuleCard(

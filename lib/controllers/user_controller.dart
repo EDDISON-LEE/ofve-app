@@ -5,13 +5,14 @@ class UserController extends ChangeNotifier {
   final _supabase = Supabase.instance.client;
 
   bool isLoading = true;
+  bool estadoBaneado = false;
   String role = 'user';
   String userName = 'Usuario';
   String userEmail = '';
   String storeName = 'Mi Comercio';
   String planName = 'Básico';
   String category = 'Sin categoría';
-  int puntos = 0; // <-- Inicializado en 0
+  int puntos = 0; 
 
   UserController() {
     loadUserData();
@@ -27,17 +28,19 @@ class UserController extends ChangeNotifier {
 
       try {
         await _supabase.auth.refreshSession();
-        // Traemos tanto el rol como los puntos reales
+        
+        // --- CAMBIO AQUÍ: Añadimos 'estado_baneado' al select ---
         final dbUser = await _supabase
             .from('usuarios')
-            .select('rol, puntos_acumulados')
+            .select('rol, puntos_acumulados, estado_baneado')
             .eq('id', user.id)
             .single();
         
         detectedRole = dbUser['rol'] ?? 'user';
         puntos = dbUser['puntos_acumulados'] ?? 0;
+        estadoBaneado = dbUser['estado_baneado'] ?? false; // <-- GUARDAMOS EL ESTADO
       } catch (e) {
-        debugPrint('Error consultando rol/puntos: $e');
+        debugPrint('Error consultando rol/puntos/baneo: $e');
         detectedRole = user.appMetadata['rol'] ?? user.userMetadata?['rol'] ?? 'user';
       }
 

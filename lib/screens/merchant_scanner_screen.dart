@@ -40,6 +40,9 @@ class _MerchantScannerScreenState extends State<MerchantScannerScreen> {
   }
 
   void _showSuccessDialog() {
+    // Detectamos si fue guardado offline o procesado online
+    final isOffline = _scanController.isQueuedOffline;
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -48,21 +51,32 @@ class _MerchantScannerScreenState extends State<MerchantScannerScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, color: AppColors.success, size: 80),
+            Icon(
+              isOffline ? Icons.cloud_off : Icons.check_circle, 
+              color: isOffline ? AppColors.warning : AppColors.success, 
+              size: 80
+            ),
             const SizedBox(height: 16),
-            const Text('¡Venta Completada!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text(
+              isOffline ? '¡Guardado Offline!' : '¡Venta Completada!', 
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)
+            ),
             const SizedBox(height: 8),
             Text(
-              'Cliente: ${_scanController.purchaseData?['usuarios']?['nombre'] ?? 'Anónimo'}\n'
-              'Total: \$${(_scanController.purchaseData?['total_pagado'] as num).toStringAsFixed(2)}',
+              isOffline
+                  ? 'No hay conexión a internet. El código QR se ha guardado en la memoria del teléfono y se validará automáticamente cuando recuperes la señal.'
+                  : 'Cliente: ${_scanController.purchaseData?['usuarios']?['nombre'] ?? 'Anónimo'}\n'
+                    'Total: \$${(_scanController.purchaseData?['total_pagado'] as num).toStringAsFixed(2)}',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Se ha notificado al cliente para que valide su compra en la app.',
+            Text(
+              isOffline
+                  ? 'Puedes seguir escaneando más códigos. No cierres la app.'
+                  : 'Se ha notificado al cliente para que valide su compra en la app.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: AppColors.textLight),
+              style: const TextStyle(fontSize: 12, color: AppColors.textLight),
             ),
           ],
         ),

@@ -10,6 +10,7 @@ class SubscriptionRequestController extends ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
   String? successMessage;
+  String? verificationStatus; // <-- NUEVO: Automatico, Manual, Rechazado
 
   Future<bool> submitRequest({
     required String planName,
@@ -22,6 +23,7 @@ class SubscriptionRequestController extends ChangeNotifier {
     isLoading = true;
     errorMessage = null;
     successMessage = null;
+    verificationStatus = null;
     notifyListeners();
 
     try {
@@ -52,16 +54,35 @@ class SubscriptionRequestController extends ChangeNotifier {
 
       final solicitudId = response['id'];
 
-      // 3. Invocar a la Edge Function para verificación
-      await _supabase.functions.invoke('verify-payment', body: {
+      // 3. Invocar a la Edge Function para verificación con IA
+      final verifyResponse = await _supabase.functions.invoke('verify-payment', body: {
         'solicitud_id': solicitudId,
         'method': method,
         'reference': reference,
         'amount': amount,
         'image_base64': imageBytes != null ? base64Encode(imageBytes) : null,
+        'plan_name': planName,
       });
 
-      // --- NUEVO: NOTIFICAR A LOS OWNERS POR NUEVO PAGO ---
+      // 4. Analizar la respuesta de la IA
+      if (verifyResponse.status == 200 && verifyResponse.data != null) {
+        final data = verifyResponse.data;
+        verificationStatus = data['status']; 
+        final motivo = data['motivo'];
+
+        if (verificationStatus == 'Automatico') {
+          successMessage = '¡Pago validado por IA! Tu plan ha sido activado instantáneamente.';
+        } else if (verificationStatus == 'Manual') {
+          successMessage = 'Comprobante recibido. La IA lo envió a revisión manual. Un administrador lo verificará pronto.';
+        } else {
+          // Rechazado
+          successMessage = 'El pago fue rechazado. Motivo: ${motivo ?? "Comprobante inválido o no coincide con el monto."}';
+        }
+      } else {
+        throw Exception('Error al comunicarse con el validador de pagos.');
+      }
+
+      // --- NOTIFICAR A LOS OWNERS POR NUEVO PAGO ---
       try {
         final owners = await _supabase.from('usuarios').select('email').eq('rol', 'owner');
         for (var owner in owners) {
@@ -79,7 +100,6 @@ class SubscriptionRequestController extends ChangeNotifier {
       }
       // ----------------------------------------------------
 
-      successMessage = 'Solicitud enviada. Si la verificación es automática, tu plan se activará en segundos. De lo contrario, un administrador la revisará.';
       return true;
 
     } catch (e) {

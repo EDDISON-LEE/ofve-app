@@ -14,13 +14,16 @@ import 'delivery_dashboard_screen.dart';
 import 'client_payment_history_screen.dart'; 
 import 'client_planned_purchases_screen.dart'; 
 import 'merchant_branches_screen.dart';
-import 'client_pools_screen.dart'; // <-- NUEVA IMPORTACIÓN
+import 'client_pools_screen.dart'; 
+import 'banned_screen.dart'; // <-- NUEVA IMPORTACIÓN
 
+import 'support_screen.dart';
 import 'merchant_edit_store_screen.dart';
 import 'merchant_metrics_screen.dart';
 import 'merchant_earnings_screen.dart';
 import 'add_product_screen.dart';
-import 'merchant_animal_requests_screen.dart'; 
+import 'merchant_animal_requests_screen.dart';
+import 'client_preferences_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -44,6 +47,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         }
+
+        // --- NUEVA VALIDACIÓN DE BANEO ---
+        if (_userController.estadoBaneado) {
+          return const BannedScreen();
+        }
+        // ---------------------------------
 
         // REDIRECCIÓN POR ROL
         if (_userController.role == 'admin') return const AdminDashboardScreen();
@@ -250,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const Divider(),
                 ],
-                if (_userController.role == 'user') ...[
+                if (_userController.role == 'user' || _userController.role == 'client') ...[
                   _buildDrawerItem(
                     Icons.shopping_bag_outlined,
                     'Mis compras',
@@ -263,7 +272,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                  // --- NUEVO ITEM: POOLS COMUNITARIOS ---
+                  _buildDrawerItem(
+                    Icons.tune, 
+                    'Mis Preferencias',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ClientPreferencesScreen()),
+                      );
+                    },
+                  ),
                   _buildDrawerItem(
                     Icons.groups,
                     'Pools Comunitarios',
@@ -275,7 +294,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     },
                   ),
-                  // --------------------------------------
                   _buildDrawerItem(
                     Icons.favorite_border,
                     'Favoritos',
@@ -298,6 +316,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         MaterialPageRoute(
                             builder: (_) =>
                                 const ClientFollowedStoresScreen()),
+                      );
+                    },
+                  ),
+                   _buildDrawerItem(
+                    Icons.help_outline,
+                    'Soporte Técnico',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SupportScreen()),
                       );
                     },
                   ),

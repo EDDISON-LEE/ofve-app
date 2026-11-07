@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart'; // <-- IMPORTANTE
+import '../services/local_storage_service.dart'; // <-- IMPORTANTE
 
 class MerchantScanController extends ChangeNotifier {
   final _supabase = Supabase.instance.client;
@@ -8,67 +10,64 @@ class MerchantScanController extends ChangeNotifier {
   String? errorMessage;
   Map<String, dynamic>? purchaseData;
   bool isSuccess = false;
+  bool isQueuedOffline = false; // <-- NUEVA VARIABLE
 
-  // Porcentaje de comisión de la plataforma (5%)
   final double commissionRate = 5.0; 
 
   Future<void> processScan(String qrToken) async {
     isLoading = true;
     errorMessage = null;
     isSuccess = false;
+    isQueuedOffline = false;
     purchaseData = null;
     notifyListeners();
 
     try {
+      // 1. VERIFICAR CONECTIVIDAD
+      final connectivityResult = await (Connectivity().checkConnectivity());
+      bool hasInternet = !connectivityResult.contains(ConnectivityResult.none);
+
+      if (!hasInternet) {
+        // --- MODO OFFLINE ---
+        await LocalStorageService.addPendingQr(qrToken);
+        isQueuedOffline = true;
+        isSuccess = true; // Éxito visual
+        notifyListeners();
+        return; 
+      }
+
+      // --- MODO ONLINE (Lógica Original) ---
       final userId = _supabase.auth.currentUser!.id;
 
-      // 1. Obtener el ID del comercio
       final comercio = await _supabase.from('comercios').select('id').eq('usuario_id', userId).single();
       final comercioId = comercio['id'];
 
-      // 2. Buscar la compra por el token del QR
-      // CORRECCIÓN: Agregamos 'email' al select de usuarios
       final compra = await _supabase
           .from('compras')
           .select('*, usuarios(nombre, email)')
           .eq('qr_token', qrToken)
           .maybeSingle();
 
-      if (compra == null) {
-        throw Exception('Código QR no válido o compra no encontrada.');
-      }
+      if (compra == null) throw Exception('Código QR no válido o compra no encontrada.');
+      if (compra['comercio_id'] != comercioId) throw Exception('Esta compra pertenece a otro comercio.');
+      if (compra['estado'] == 'Completado') throw Exception('Esta compra ya fue escaneada y completada.');
 
-      // 3. Validar que la compra sea de este comercio
-      if (compra['comercio_id'] != comercioId) {
-        throw Exception('Esta compra pertenece a otro comercio.');
-      }
-
-      // 4. Validar que no esté ya completada
-      if (compra['estado'] == 'Completado') {
-        throw Exception('Esta compra ya fue escaneada y completada.');
-      }
-
-      // 5. Actualizar el estado de la compra
       await _supabase.from('compras').update({
         'estado': 'Completado',
         'fecha_validacion': DateTime.now().toIso8601String(),
       }).eq('id', compra['id']);
 
-      // 6. Registrar la comisión para el Owner
       try {
         await _supabase.rpc('registrar_comision', params: {
           'p_compra_id': compra['id'],
           'p_porcentaje': commissionRate,
         });
       } catch (e) {
-        // Si falla la comisión, no bloqueamos la venta
         debugPrint('⚠️ Error registrando comisión: $e');
       }
 
-      // --- NUEVA LÓGICA DE NOTIFICACIÓN PUSH AL CLIENTE ---
       try {
         final clienteEmail = compra['usuarios']?['email'];
-
         if (clienteEmail != null) {
           await _supabase.functions.invoke('send-push', body: {
             'target_email': clienteEmail,
@@ -80,7 +79,6 @@ class MerchantScanController extends ChangeNotifier {
       } catch (e) {
         debugPrint('⚠️ Error enviando notificación al cliente: $e');
       }
-      // -----------------------------------------------------
 
       purchaseData = compra;
       isSuccess = true;

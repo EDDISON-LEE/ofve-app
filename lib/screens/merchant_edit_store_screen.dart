@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // <-- IMPORTANTE
 import '../core/theme/app_theme.dart';
 import '../controllers/merchant_store_controller.dart';
 
@@ -13,6 +14,7 @@ class MerchantEditStoreScreen extends StatefulWidget {
 
 class _MerchantEditStoreScreenState extends State<MerchantEditStoreScreen> {
   final _storeController = MerchantStoreController();
+  final _supabase = Supabase.instance.client;
   
   final _nameCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
@@ -23,6 +25,11 @@ class _MerchantEditStoreScreenState extends State<MerchantEditStoreScreen> {
   final _fbCtrl = TextEditingController();
   final _waCtrl = TextEditingController();
   final _xCtrl = TextEditingController();
+  
+  // --- NUEVOS CONTROLADORES ---
+  final _whatsappNumCtrl = TextEditingController();
+  bool _resumenIaActivo = false;
+  // ----------------------------
 
   String _selectedCategory = 'Otros';
   bool _aceptaDelivery = false;
@@ -34,8 +41,21 @@ class _MerchantEditStoreScreenState extends State<MerchantEditStoreScreen> {
   @override
   void initState() {
     super.initState();
-    // Sincronizamos los controladores cuando los datos terminen de cargar
     _storeController.addListener(_syncData);
+    _loadExtraData(); // Cargar WhatsApp y estado del resumen
+  }
+
+  Future<void> _loadExtraData() async {
+    try {
+      final userId = _supabase.auth.currentUser!.id;
+      final data = await _supabase.from('comercios').select('whatsapp_numero, resumen_ia_activo').eq('usuario_id', userId).single();
+      setState(() {
+        _whatsappNumCtrl.text = data['whatsapp_numero'] ?? '';
+        _resumenIaActivo = data['resumen_ia_activo'] ?? false;
+      });
+    } catch (e) {
+      debugPrint('Error cargando datos extra: $e');
+    }
   }
 
   void _syncData() {
@@ -70,6 +90,7 @@ class _MerchantEditStoreScreenState extends State<MerchantEditStoreScreen> {
     _fbCtrl.dispose();
     _waCtrl.dispose();
     _xCtrl.dispose();
+    _whatsappNumCtrl.dispose(); // <-- DISPOSE
     super.dispose();
   }
 
@@ -96,6 +117,19 @@ class _MerchantEditStoreScreenState extends State<MerchantEditStoreScreen> {
       newWa: _waCtrl.text,
       newX: _xCtrl.text,
     );
+
+    if (success) {
+      // --- GUARDAR DATOS EXTRA ---
+      try {
+        final userId = _supabase.auth.currentUser!.id;
+        await _supabase.from('comercios').update({
+          'whatsapp_numero': _whatsappNumCtrl.text.trim(),
+        }).eq('usuario_id', userId);
+      } catch (e) {
+        debugPrint('Error guardando WhatsApp: $e');
+      }
+      // -----------------------------
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -183,6 +217,45 @@ class _MerchantEditStoreScreenState extends State<MerchantEditStoreScreen> {
                   contentPadding: EdgeInsets.zero,
                 ),
                 
+                // --- NUEVA SECCIÓN: RESUMEN IA ---
+                if (_resumenIaActivo) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.success.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.auto_awesome, color: AppColors.success),
+                            SizedBox(width: 8),
+                            Text('Asistente IA Diario (WhatsApp)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        const Text('Recibe un resumen de tus ventas todos los días a las 7:00 AM.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _whatsappNumCtrl,
+                          keyboardType: TextInputType.phone,
+                          decoration: const InputDecoration(
+                            labelText: 'Tu número de WhatsApp (Ej: +584141234567)',
+                            prefixIcon: Icon(Icons.phone),
+                            filled: true,
+                            fillColor: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                // ---------------------------------
+
                 const Divider(height: 30),
                 const Text('Redes Sociales', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryPurple)),
                 const SizedBox(height: 12),

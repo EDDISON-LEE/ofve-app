@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; // <-- IMPORT AGREGADO
+import 'package:supabase_flutter/supabase_flutter.dart'; 
 import '../core/theme/app_theme.dart';
 import '../controllers/auth_controller.dart';
 
@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _nameController = TextEditingController();
   final _storeNameController = TextEditingController();
   final _rifController = TextEditingController();
+  final _referidoController = TextEditingController(); // <-- NUEVO CONTROLADOR
 
   bool _isRegistering = false;
   String _selectedRole = 'user';
@@ -30,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _nameController.dispose();
     _storeNameController.dispose();
     _rifController.dispose();
+    _referidoController.dispose(); // <-- DISPOSE
     super.dispose();
   }
 
@@ -53,6 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
         isAdult: _isAdult,
         storeName: _storeNameController.text.trim(),
         rif: _rifController.text.trim(),
+        referidoPor: _referidoController.text.trim(), // <-- ENVIAMOS EL CÓDIGO
       );
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -65,13 +68,11 @@ class _LoginScreenState extends State<LoginScreen> {
       final success = await _authController.login(email, password);
       
       if (success) {
-        // --- INICIO DE LA IMPRESIÓN DEL TOKEN ---
         final session = Supabase.instance.client.auth.currentSession;
         debugPrint('==================================================');
         debugPrint('TOKEN DE ACCESO COMPLETO:');
         debugPrint(session?.accessToken);
         debugPrint('==================================================');
-        // --- FIN DE LA IMPRESIÓN DEL TOKEN ---
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_authController.errorMessage ?? 'Error de login'), backgroundColor: AppColors.error),
@@ -139,6 +140,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                     const SizedBox(height: 12),
+
+                    // --- NUEVO CAMPO DE REFERIDO ---
+                    TextField(
+                      controller: _referidoController,
+                      decoration: const InputDecoration(
+                        labelText: 'Código de Invitación (Opcional)', 
+                        prefixIcon: Icon(Icons.card_giftcard)
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
                     CheckboxListTile(
                       value: _isAdult,
                       activeColor: AppColors.primaryPurple,

@@ -13,6 +13,7 @@ import 'admin_categories_screen.dart';
 import 'admin_zones_screen.dart';
 import 'admin_offers_screen.dart'; 
 import 'admin_animal_requests_screen.dart';
+import 'admin_analytics_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -86,6 +87,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             subtitle: 'Revisar', 
                             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminOffersScreen()))
                           ),
+
+                          _buildModuleCard(
+  icon: Icons.insert_chart, 
+  title: 'Analítica', 
+  subtitle: 'Métricas y Gráficos', 
+  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminAnalyticsScreen()))
+),
                           _buildModuleCard(
                             icon: Icons.pets, 
                             title: 'Animales', 

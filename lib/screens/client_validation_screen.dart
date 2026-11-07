@@ -117,6 +117,10 @@ class _ValidationFormSheetState extends State<_ValidationFormSheet> {
   bool _buenEstado = true;
   DateTime? _fechaCaducidad;
   bool _isSaving = false;
+  
+  // Variables para las estrellas
+  int _ratingEstado = 0;
+  int _ratingAtencion = 0;
 
   Future<void> _seleccionarFecha() async {
     final date = await showDatePicker(
@@ -130,22 +134,56 @@ class _ValidationFormSheetState extends State<_ValidationFormSheet> {
   }
 
   Future<void> _submit() async {
+    if (_ratingEstado == 0 || _ratingAtencion == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Debes calificar el estado del producto y la atención para recibir tus puntos.'),
+        backgroundColor: AppColors.warning,
+      ));
+      return;
+    }
+
     setState(() => _isSaving = true);
     final success = await widget.controller.submitValidation(
       compraId: widget.compra['id'],
       recibido: _recibido,
       buenEstado: _buenEstado,
       fechaCaducidad: _fechaCaducidad,
+      calificacionEstado: _ratingEstado, // <-- ENVIAMOS LAS ESTRELLAS
+      calificacionAtencion: _ratingAtencion, // <-- ENVIAMOS LAS ESTRELLAS
     );
 
     if (mounted) {
-      Navigator.pop(context); // Cerrar el modal
+      Navigator.pop(context); 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Gracias por tu validación!'), backgroundColor: AppColors.success));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Gracias por tu validación! Has ganado +5 puntos.'), backgroundColor: AppColors.success));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al validar.'), backgroundColor: AppColors.error));
       }
     }
+  }
+
+  Widget _buildStars(String label, int currentRating, Function(int) onRatingChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(5, (index) {
+            return IconButton(
+              icon: Icon(
+                index < currentRating ? Icons.star : Icons.star_border,
+                color: Colors.amber,
+                size: 36,
+              ),
+              onPressed: () => onRatingChanged(index + 1),
+            );
+          }),
+        ),
+        const Divider(),
+      ],
+    );
   }
 
   @override
@@ -162,6 +200,8 @@ class _ValidationFormSheetState extends State<_ValidationFormSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text('Validación de Compra', textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('Para recibir tus puntos, es obligatorio calificar tu experiencia.', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: Colors.grey)),
             const SizedBox(height: 20),
             
             SwitchListTile(
@@ -180,6 +220,9 @@ class _ValidationFormSheetState extends State<_ValidationFormSheet> {
 
             const Divider(),
 
+            _buildStars('Calidad del Producto', _ratingEstado, (val) => setState(() => _ratingEstado = val)),
+            _buildStars('Atención del Comercio', _ratingAtencion, (val) => setState(() => _ratingAtencion = val)),
+
             ListTile(
               leading: const Icon(Icons.calendar_today, color: AppColors.primaryPurple),
               title: const Text('Fecha de Caducidad (Opcional)', style: TextStyle(fontWeight: FontWeight.w500)),
@@ -193,11 +236,13 @@ class _ValidationFormSheetState extends State<_ValidationFormSheet> {
             SizedBox(
               height: 50,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryPurple),
-                onPressed: _isSaving ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: (_ratingEstado > 0 && _ratingAtencion > 0) ? AppColors.primaryPurple : Colors.grey,
+                ),
+                onPressed: (_isSaving || _ratingEstado == 0 || _ratingAtencion == 0) ? null : _submit,
                 child: _isSaving 
                   ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2))
-                  : const Text('Guardar Validación'),
+                  : const Text('Guardar y Reclamar Puntos'),
               ),
             ),
             const SizedBox(height: 20),

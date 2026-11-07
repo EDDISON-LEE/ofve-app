@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart'; // <-- NUEVO
-import 'package:supabase_flutter/supabase_flutter.dart'; // <-- NUEVO
+import 'package:url_launcher/url_launcher.dart'; 
+import 'package:supabase_flutter/supabase_flutter.dart'; 
 import '../core/theme/app_theme.dart';
 import '../controllers/subscription_request_controller.dart';
 
@@ -17,11 +17,11 @@ class PaymentRequestModal extends StatefulWidget {
 
 class _PaymentRequestModalState extends State<PaymentRequestModal> {
   final _requestController = SubscriptionRequestController();
-  String _selectedMethod = 'Stripe'; // Stripe por defecto
+  String _selectedMethod = 'Stripe'; 
   final _referenceCtrl = TextEditingController();
   Uint8List? _imageBytes;
   String? _imageName;
-  bool _isStripeLoading = false; // <-- NUEVO
+  bool _isStripeLoading = false; 
 
   @override
   void dispose() {
@@ -38,7 +38,44 @@ class _PaymentRequestModalState extends State<PaymentRequestModal> {
     }
   }
 
-  // FUNCIÓN PARA PAGAR CON STRIPE
+  // --- NUEVA FUNCIÓN: Alerta Elegante de Resultado ---
+  void _mostrarResultado(String titulo, String mensaje, Color color) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Column(
+          children: [
+            Icon(
+              color == AppColors.success ? Icons.check_circle : (color == AppColors.error ? Icons.cancel : Icons.hourglass_top), 
+              color: color, 
+              size: 60
+            ),
+            const SizedBox(height: 12),
+            Text(titulo, textAlign: TextAlign.center, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 20)),
+          ],
+        ),
+        content: Text(mensaje, textAlign: TextAlign.center, style: const TextStyle(fontSize: 15)),
+        actions: [
+          Center(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              ),
+              onPressed: () {
+                Navigator.pop(ctx); // Cierra alerta
+                Navigator.pop(context); // Cierra modal
+              },
+              child: const Text('Entendido', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
   Future<void> _pagarConStripe() async {
     setState(() => _isStripeLoading = true);
     try {
@@ -57,7 +94,7 @@ class _PaymentRequestModalState extends State<PaymentRequestModal> {
         final url = Uri.parse(response.data['url']);
         if (await canLaunchUrl(url)) {
           await launchUrl(url, mode: LaunchMode.externalApplication);
-          if (mounted) Navigator.pop(context); // Cerrar modal al ir a Stripe
+          if (mounted) Navigator.pop(context);
         }
       } else {
         throw Exception('Error al crear la sesión de pago.');
@@ -110,7 +147,7 @@ class _PaymentRequestModalState extends State<PaymentRequestModal> {
                   SizedBox(
                     height: 50,
                     child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6772E5)), // Color oficial de Stripe
+                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6772E5)), 
                       onPressed: _isStripeLoading ? null : _pagarConStripe,
                       icon: _isStripeLoading 
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
@@ -126,7 +163,7 @@ class _PaymentRequestModalState extends State<PaymentRequestModal> {
                   TextField(controller: _referenceCtrl, decoration: const InputDecoration(labelText: 'Número de Referencia / Ticket', prefixIcon: Icon(Icons.numbers))),
                   const SizedBox(height: 12),
                   
-                  if (_selectedMethod == 'Efectivo' || _selectedMethod == 'Transferencia')
+                  if (_selectedMethod == 'Efectivo' || _selectedMethod == 'Transferencia' || _selectedMethod == 'Pago Movil')
                     InkWell(
                       onTap: _pickImage,
                       child: Container(
@@ -155,9 +192,19 @@ class _PaymentRequestModalState extends State<PaymentRequestModal> {
                           imageBytes: _imageBytes,
                           imageName: _imageName,
                         );
+                        
                         if (success && mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_requestController.successMessage!), backgroundColor: AppColors.success));
+                          // --- MOSTRAR ALERTA SEGÚN LA IA ---
+                          final status = _requestController.verificationStatus;
+                          final msg = _requestController.successMessage ?? '';
+
+                          if (status == 'Automatico') {
+                            _mostrarResultado('¡Pago Aprobado Automáticamente!', msg, AppColors.success);
+                          } else if (status == 'Manual') {
+                            _mostrarResultado('Pago en Revisión', msg, AppColors.warning);
+                          } else {
+                            _mostrarResultado('Pago Rechazado', msg, AppColors.error);
+                          }
                         } else if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_requestController.errorMessage!), backgroundColor: AppColors.error));
                         }

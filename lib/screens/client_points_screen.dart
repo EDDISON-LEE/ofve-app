@@ -102,6 +102,40 @@ class _ClientPointsScreenState extends State<ClientPointsScreen> {
                         ),
                       ),
 
+                      // --- PREMIO 1000 PUNTOS ---
+                      if (_pointsController.currentPoints >= 1000) ...[
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [Colors.amber, Colors.orange]),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [BoxShadow(color: Colors.amber.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 8))],
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(Icons.card_giftcard, color: Colors.white, size: 60),
+                              const SizedBox(height: 12),
+                              const Text('¡Felicidades! Has alcanzado 1000 puntos.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                              const SizedBox(height: 8),
+                              const Text('Reclama tu premio exclusivo de bienvenida.', textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 13)),
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 45,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.orange),
+                                  onPressed: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Premio reclamado! Un asesor se contactará contigo.'), backgroundColor: AppColors.success));
+                                  },
+                                  child: const Text('Reclamar Premio Ahora', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+
                       const SizedBox(height: 30),
                       const Text('Historial de Puntos', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 12),

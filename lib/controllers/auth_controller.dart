@@ -33,6 +33,7 @@ class AuthController extends ChangeNotifier {
     required bool isAdult,
     String? storeName,
     String? rif,
+    String? referidoPor, // <-- NUEVO PARÁMETRO
   }) async {
     isLoading = true;
     errorMessage = null;
@@ -40,11 +41,16 @@ class AuthController extends ChangeNotifier {
 
     try {
       await _authService.register(
-        email: email, password: password, role: role, 
-        name: name, isAdult: isAdult, storeName: storeName, rif: rif
+        email: email, 
+        password: password, 
+        role: role, 
+        name: name, 
+        isAdult: isAdult, 
+        storeName: storeName, 
+        rif: rif,
+        referidoPor: referidoPor, // <-- LO PASAMOS AL SERVICIO
       );
       
-      // Cierre de sesión automático para forzar login manual tras registro
       await _authService.logout();
       
       isLoading = false;

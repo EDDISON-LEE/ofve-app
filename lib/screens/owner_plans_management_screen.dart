@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // <-- IMPORTANTE
 import '../core/theme/app_theme.dart';
 import '../controllers/owner_plans_controller.dart';
 import 'owner_assign_plan_screen.dart';
@@ -12,8 +13,8 @@ class OwnerPlansManagementScreen extends StatefulWidget {
 
 class _OwnerPlansManagementScreenState extends State<OwnerPlansManagementScreen> {
   final _plansController = OwnerPlansController();
+  final _supabase = Supabase.instance.client; // <-- INSTANCIA
 
-  // Diálogo para editar Precio
   Future<void> _editarPrecio(String planId, String nombre, double precioActual) async {
     final ctrl = TextEditingController(text: precioActual.toString());
     final nuevoPrecio = await showDialog<double>(
@@ -40,7 +41,6 @@ class _OwnerPlansManagementScreenState extends State<OwnerPlansManagementScreen>
     }
   }
 
-  // Diálogo para editar Cuota de IA
   Future<void> _editarCuotaIA(String planId, String nombre, int cuotaActual) async {
     final ctrl = TextEditingController(text: cuotaActual.toString());
     final nuevaCuota = await showDialog<int>(
@@ -67,6 +67,17 @@ class _OwnerPlansManagementScreenState extends State<OwnerPlansManagementScreen>
       await _plansController.updatePlanAI(planId, plan['ia_habilitada'], nuevaCuota);
     }
   }
+
+  // --- NUEVA FUNCIÓN: Activar/Desactivar Resumen IA ---
+  Future<void> _toggleResumenIA(String planId, bool currentValue) async {
+    try {
+      await _supabase.from('planes_suscripcion').update({'incluye_resumen_ia': !currentValue}).eq('id', planId);
+      _plansController.loadData(); // Recargar
+    } catch (e) {
+      debugPrint('Error actualizando resumen IA: $e');
+    }
+  }
+  // -----------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +120,7 @@ class _OwnerPlansManagementScreenState extends State<OwnerPlansManagementScreen>
                       final features = plan['plan_caracteristicas'] as List<dynamic>? ?? [];
                       final iaActiva = plan['ia_habilitada'] ?? false;
                       final cuotaIa = plan['ia_cuota_mensual'] ?? 0;
+                      final incluyeResumen = plan['incluye_resumen_ia'] ?? false; // <-- NUEVO
                       final isBasic = plan['nombre'].toString().toLowerCase() == 'básico' || plan['nombre'].toString().toLowerCase() == 'basico';
 
                       return Card(
@@ -144,6 +156,18 @@ class _OwnerPlansManagementScreenState extends State<OwnerPlansManagementScreen>
                                 trailing: const Icon(Icons.edit, size: 20),
                                 onTap: () => _editarCuotaIA(plan['id'], plan['nombre'], cuotaIa),
                               ),
+                            
+                            // --- NUEVO: INTERRUPTOR DE RESUMEN DIARIO ---
+                            SwitchListTile(
+                              title: const Text('Resumen Diario WhatsApp', style: TextStyle(fontWeight: FontWeight.w600)),
+                              subtitle: const Text('Envía un resumen de ventas a las 7:00 AM'),
+                              value: incluyeResumen,
+                              activeColor: AppColors.success,
+                              secondary: const Icon(Icons.chat, color: AppColors.success),
+                              onChanged: (val) => _toggleResumenIA(plan['id'], incluyeResumen),
+                            ),
+                            // ---------------------------------------------
+
                             const Divider(),
                             
                             // CARACTERÍSTICAS DEL PLAN

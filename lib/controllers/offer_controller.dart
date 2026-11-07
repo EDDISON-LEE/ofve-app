@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart'; // <-- NUEVO PAQUETE
+import 'package:flutter_image_compress/flutter_image_compress.dart'; 
 
 class OfferController extends ChangeNotifier {
   final _supabase = Supabase.instance.client;
@@ -14,18 +14,17 @@ class OfferController extends ChangeNotifier {
     try {
       final result = await FlutterImageCompress.compressWithList(
         bytes,
-        minWidth: 800,  // Tamaño óptimo para la app
+        minWidth: 800,  
         minHeight: 800,
-        quality: 80,    // Calidad 80% (excelente relación peso/calidad)
-        format: CompressFormat.webp, // Conversión a WebP directo
+        quality: 80,    
+        format: CompressFormat.webp, 
       );
       return Uint8List.fromList(result);
     } catch (e) {
       debugPrint('Error procesando imagen, se usará la original: $e');
-      return bytes; // Si falla, sube la original para no bloquear la venta
+      return bytes; 
     }
   }
-  // --------------------------------------------
 
   Future<String?> _uploadImage(Uint8List imageBytes) async {
     try {
@@ -64,7 +63,6 @@ class OfferController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1. Procesar imagen a WebP (Ahora es casi instantáneo)
       final webpBytes = await _procesarImagen(imageBytes);
       if (webpBytes == null) {
         throw Exception('No se pudo procesar la imagen. Intenta con otra foto.');
@@ -78,13 +76,11 @@ class OfferController extends ChangeNotifier {
           .single();
       final comercioId = comercioData['id'];
 
-      // 2. Subir imagen procesada
       final imageUrl = await _uploadImage(webpBytes);
       if (imageUrl == null) {
         throw Exception('Error al subir la imagen al servidor.');
       }
 
-      // 3. Insertar oferta en la BD
       final inserted = await _supabase
           .from('ofertas')
           .insert({
@@ -104,7 +100,18 @@ class OfferController extends ChangeNotifier {
           .select('id')
           .single();
 
-      // 4. Vincular a solicitud de animal si aplica
+      // --- NUEVO: GENERAR EMBEDDING IA PARA BÚSQUEDA SEMÁNTICA ---
+      try {
+        await _supabase.functions.invoke('generate-offer-embedding', body: {
+          'offer_id': inserted['id'],
+          'text': '${nombre.trim()} ${descripcion.trim()} ${categoria}',
+        });
+        debugPrint('🧠 Embedding generado con éxito para la oferta.');
+      } catch (e) {
+        debugPrint('⚠️ Error generando embedding IA: $e');
+      }
+      // -----------------------------------------------------------
+
       if (solicitudAnimalId != null) {
         try {
           await _supabase.from('solicitudes_animales').update({
@@ -157,7 +164,8 @@ class OfferController extends ChangeNotifier {
         throw Exception('Error al subir la imagen.');
       }
 
-      await _supabase.from('ofertas').insert({
+      // MODIFICADO: Agregamos .select('id').single() para obtener el ID del inventario
+      final insertedInv = await _supabase.from('ofertas').insert({
         'comercio_id': comercioId,
         'producto_nombre': nombre.trim(),
         'descripcion': descripcion.trim(),
@@ -169,7 +177,19 @@ class OfferController extends ChangeNotifier {
         'imagen_url': imageUrl,
         'estado': 'Activo',
         'fecha_inicio': DateTime.now().toIso8601String(),
-      });
+      }).select('id').single();
+
+      // --- NUEVO: GENERAR EMBEDDING IA TAMBIÉN PARA EL INVENTARIO ---
+      try {
+        await _supabase.functions.invoke('generate-offer-embedding', body: {
+          'offer_id': insertedInv['id'],
+          'text': '${nombre.trim()} ${descripcion.trim()} ${categoria}',
+        });
+        debugPrint('🧠 Embedding generado con éxito para el inventario.');
+      } catch (e) {
+        debugPrint('⚠️ Error generando embedding IA en inventario: $e');
+      }
+      // --------------------------------------------------------------
 
       return true;
     } catch (e) {

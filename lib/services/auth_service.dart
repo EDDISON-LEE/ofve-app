@@ -16,6 +16,7 @@ class AuthService {
     required bool isAdult,
     String? storeName,
     String? rif,
+    String? referidoPor, // <-- NUEVO PARÁMETRO
   }) async {
     return await _supabase.auth.signUp(
       email: email,
@@ -25,6 +26,7 @@ class AuthService {
         'nombre': role == 'merchant' ? storeName : name,
         'rol': role,
         'mayor_de_edad': isAdult,
+        'referido_por_codigo': referidoPor, // <-- LO GUARDAMOS EN LOS METADATOS
       },
     );
   }

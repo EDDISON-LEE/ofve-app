@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // <-- IMPORTANTE
 import '../core/theme/app_theme.dart';
 import '../controllers/purchase_controller.dart';
-import '../controllers/currency_controller.dart'; // <-- IMPORTACIÓN
-import '../widgets/currency_ticker.dart'; // <-- IMPORTACIÓN
+import '../controllers/currency_controller.dart'; 
+import '../widgets/currency_ticker.dart'; 
 import 'purchase_qr_screen.dart';
 
 class ClientCheckoutScreen extends StatefulWidget {
@@ -16,8 +17,9 @@ class ClientCheckoutScreen extends StatefulWidget {
 
 class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
   final _purchaseController = PurchaseController();
-  final _currencyController = CurrencyController(); // <-- INSTANCIA
+  final _currencyController = CurrencyController(); 
   final _couponController = TextEditingController();
+  final _supabase = Supabase.instance.client; // <-- INSTANCIA
 
   double _precioOriginal = 0.0;
   double _precioFinal = 0.0;
@@ -28,6 +30,8 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
   bool _requiereDelivery = false;
   final double _costoDelivery = 1.50; 
 
+  bool _isDeliveryAvailable = false; // <-- NUEVA VARIABLE
+
   @override
   void initState() {
     super.initState();
@@ -35,12 +39,31 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
         ? (widget.oferta['precio_oferta'] as num).toDouble()
         : (widget.oferta['precio_regular'] as num).toDouble();
     _precioFinal = _precioOriginal;
+    _checkDeliveryAvailability(); // <-- LLAMADA DE VERIFICACIÓN
   }
+
+  // --- NUEVO MÉTODO: Verificar si se permite Delivery ---
+  Future<void> _checkDeliveryAvailability() async {
+    try {
+      // 1. Verificar si el Owner lo activó globalmente
+      final config = await _supabase.from('configuracion_global').select('delivery_activo').eq('id', 1).single();
+      if (config['delivery_activo'] != true) return;
+
+      // 2. Verificar si el comercio acepta delivery
+      final comercio = await _supabase.from('comercios').select('acepta_delivery').eq('id', widget.oferta['comercio_id']).single();
+      if (comercio['acepta_delivery'] == true) {
+        setState(() => _isDeliveryAvailable = true);
+      }
+    } catch (e) {
+      debugPrint('Error verificando delivery: $e');
+    }
+  }
+  // --------------------------------------------------------
 
   @override
   void dispose() {
     _couponController.dispose();
-    _currencyController.dispose(); // <-- DISPOSE
+    _currencyController.dispose(); 
     super.dispose();
   }
 
@@ -123,7 +146,7 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
             actions: const [
               Padding(
                 padding: EdgeInsets.only(right: 16.0),
-                child: Center(child: CurrencyTicker()), // <-- TASA EN EL APP BAR
+                child: Center(child: CurrencyTicker()),
               ),
             ],
           ),
@@ -151,7 +174,6 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
                             Text(widget.oferta['producto_nombre'] ?? 'Producto', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                             const SizedBox(height: 8),
                             Text('\$${_precioOriginal.toStringAsFixed(2)}', style: const TextStyle(color: AppColors.textLight, fontSize: 14)),
-                            // --- TASA BCV ---
                             Text('≈ ${_currencyController.formatBs(_precioOriginal)}', style: const TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.bold)),
                           ],
                         ),
@@ -162,21 +184,23 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
 
                 const SizedBox(height: 20),
 
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16)),
-                  child: SwitchListTile(
-                    title: const Text('¿Deseas Delivery?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    subtitle: Text('Costo adicional: \$${_costoDelivery.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12)),
-                    value: _requiereDelivery,
-                    activeColor: AppColors.primaryPurple,
-                    contentPadding: EdgeInsets.zero,
-                    onChanged: (val) {
-                      setState(() => _requiereDelivery = val);
-                      _recalcularTotal();
-                    },
+                // --- SWITCH DE DELIVERY CONDICIONAL ---
+                if (_isDeliveryAvailable)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16)),
+                    child: SwitchListTile(
+                      title: const Text('¿Deseas Delivery?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      subtitle: Text('Costo adicional: \$${_costoDelivery.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12)),
+                      value: _requiereDelivery,
+                      activeColor: AppColors.primaryPurple,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) {
+                        setState(() => _requiereDelivery = val);
+                        _recalcularTotal();
+                      },
+                    ),
                   ),
-                ),
 
                 const SizedBox(height: 30),
                 const Text('¿Tienes un cupón de descuento?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -261,7 +285,6 @@ class _ClientCheckoutScreenState extends State<ClientCheckoutScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text('\$${_precioFinal.toStringAsFixed(2)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryPurple)),
-                        // --- TOTAL EN BS ---
                         Text('≈ ${_currencyController.formatBs(_precioFinal)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.success)),
                       ],
                     ),

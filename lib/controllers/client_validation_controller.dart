@@ -36,11 +36,14 @@ class ClientValidationController extends ChangeNotifier {
     }
   }
 
+  // --- MÉTODO ACTUALIZADO CON LAS CALIFICACIONES ---
   Future<bool> submitValidation({
     required String compraId,
     required bool recibido,
     required bool buenEstado,
     DateTime? fechaCaducidad,
+    required int calificacionEstado,   // <-- NUEVO PARÁMETRO
+    required int calificacionAtencion, // <-- NUEVO PARÁMETRO
   }) async {
     isLoading = true;
     notifyListeners();
@@ -51,6 +54,8 @@ class ClientValidationController extends ChangeNotifier {
         'p_recibido': recibido,
         'p_buen_estado': buenEstado,
         'p_fecha_caducidad': fechaCaducidad?.toIso8601String().split('T')[0], // Solo la fecha YYYY-MM-DD
+        'p_calificacion_estado': calificacionEstado,   // <-- ENVIAMOS A SUPABASE
+        'p_calificacion_atencion': calificacionAtencion, // <-- ENVIAMOS A SUPABASE
       });
 
       await loadPendingValidations(); // Recargar la lista
