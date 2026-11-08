@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart'; // <-- NUEVO IMPORT
+import 'package:intl/intl.dart';
 import '../core/theme/app_theme.dart';
 import '../controllers/offer_controller.dart';
 import '../controllers/categories_controller.dart';
@@ -307,14 +307,14 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
                           suffixIcon: IconButton(
                             tooltip: 'Generar con IA (Vision)',
                             icon: const Icon(Icons.auto_awesome, color: AppColors.primaryPurple),
-                            onPressed: _generarDescripcionIA, // <-- LLAMADA ACTUALIZADA
+                            onPressed: _generarDescripcionIA,
                           ),
                         ),
                       ),
                       const SizedBox(height: 12),
 
                       DropdownButtonFormField<String>(
-                        value: _selectedCategory,
+                        initialValue: _selectedCategory, // <-- FIX: value reemplazado por initialValue
                         decoration: const InputDecoration(labelText: 'Categoría', prefixIcon: Icon(Icons.category)),
                         items: _categoriesController.categories.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                         onChanged: (v) => setState(() => _selectedCategory = v),
@@ -396,7 +396,7 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
                         title: const Text('¿Es un producto perecedero?', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                         subtitle: const Text('Si es de consumo humano o animal, indica su caducidad.', style: TextStyle(fontSize: 12)),
                         value: _esPerecedero,
-                        activeColor: AppColors.primaryPurple,
+                        activeThumbColor: AppColors.primaryPurple, // <-- FIX: activeColor reemplazado
                         contentPadding: EdgeInsets.zero,
                         onChanged: (val) => setState(() {
                           _esPerecedero = val;
