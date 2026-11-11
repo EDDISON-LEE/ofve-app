@@ -1,10 +1,10 @@
 ﻿import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart'; // <-- FIX: Cambiado file_picker por file_selector
 import '../core/theme/app_theme.dart';
 import '../controllers/merchant_profile_controller.dart';
 import '../controllers/categories_controller.dart'; 
-import '../controllers/zones_controller.dart'; // <-- NUEVA IMPORTACIÓN
+import '../controllers/zones_controller.dart';
 import 'map_picker_screen.dart';
 
 class MerchantProfileScreen extends StatefulWidget {
@@ -20,7 +20,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _profileController = MerchantProfileController();
   final _categoriesController = CategoriesController();
-  final _zonesController = ZonesController(); // <-- NUEVO CONTROLADOR
+  final _zonesController = ZonesController();
 
   // Controladores de Texto
   final _nameCtrl = TextEditingController();
@@ -66,23 +66,36 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
   }
 
   Future<void> _pickImage(String type) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
-    if (result != null && result.files.single.bytes != null) {
-      _profileController.setImage(type, result.files.single.bytes!, result.files.single.name);
+    // FIX: Usando file_selector
+    const typeGroup = XTypeGroup(label: 'imágenes', extensions: <String>['jpg', 'png', 'jpeg', 'webp']);
+    try {
+      final XFile? file = await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+      if (file != null) {
+        final bytes = await file.readAsBytes();
+        _profileController.setImage(type, bytes, file.name);
+      }
+    } catch (e) {
+      debugPrint('Error seleccionando imagen: $e');
     }
   }
 
   Future<void> _pickPdf(String type) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf'], withData: true);
-    if (result != null && result.files.single.bytes != null) {
-      _profileController.setPdf(type, result.files.single.bytes!, result.files.single.name);
+    // FIX: Usando file_selector
+    const typeGroup = XTypeGroup(label: 'pdf', extensions: <String>['pdf']);
+    try {
+      final XFile? file = await openFile(acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+      if (file != null) {
+        final bytes = await file.readAsBytes();
+        _profileController.setPdf(type, bytes, file.name);
+      }
+    } catch (e) {
+      debugPrint('Error seleccionando PDF: $e');
     }
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
-    // Validar que se haya seleccionado una zona
     final parroquiaId = _zonesController.getSelectedParroquiaId();
     if (parroquiaId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -175,7 +188,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
       builder: (context, child) {
         return Scaffold(
           backgroundColor: AppColors.bgTop,
-          appBar: AppBar(title: const Text('Completar Perfil')),
+          appBar: AppBar(title: const Text('Perfil del Comercio')),
           body: _profileController.isLoading || _categoriesController.isLoading || _zonesController.isLoading
               ? const Center(child: CircularProgressIndicator(color: AppColors.primaryPurple))
               : SingleChildScrollView(
@@ -185,7 +198,8 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _buildSectionTitle('1. Información del Negocio'),
+                        // NLP: "Información" suena a trámite. "Identidad" suena a marca.
+                        _buildSectionTitle('1. Identidad de tu Marca'),
                         _buildTextField(_nameCtrl, 'Nombre Comercial', Icons.store, required: true),
                         const SizedBox(height: 12),
                         Row(
@@ -194,7 +208,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: _categoria,
+                                initialValue: _categoria, // FIX: value -> initialValue
                                 decoration: const InputDecoration(labelText: 'Categoría *'),
                                 items: _categoriesController.categories.map((e) => DropdownMenuItem(value: e, child: Text(e, overflow: TextOverflow.ellipsis))).toList(),
                                 onChanged: (v) => setState(() => _categoria = v),
@@ -220,7 +234,8 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        _buildSectionTitle('2. Contacto y Ubicación'),
+                        
+                        _buildSectionTitle('2. Ubicación y Cobertura'),
                         _buildTextField(_addressCtrl, 'Dirección Física', Icons.location_on, required: true),
                         const SizedBox(height: 12),
                         
@@ -229,7 +244,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                           children: [
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: _zonesController.selectedEstado,
+                                initialValue: _zonesController.selectedEstado, // FIX: value -> initialValue
                                 decoration: const InputDecoration(labelText: 'Estado *'),
                                 items: _zonesController.estados.map((e) => DropdownMenuItem(value: e, child: Text(e, overflow: TextOverflow.ellipsis))).toList(),
                                 onChanged: (v) => _zonesController.selectEstado(v),
@@ -239,7 +254,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: _zonesController.selectedMunicipio,
+                                initialValue: _zonesController.selectedMunicipio, // FIX: value -> initialValue
                                 decoration: const InputDecoration(labelText: 'Municipio *'),
                                 items: _zonesController.municipios.map((e) => DropdownMenuItem(value: e, child: Text(e, overflow: TextOverflow.ellipsis))).toList(),
                                 onChanged: _zonesController.selectedEstado == null ? null : (v) => _zonesController.selectMunicipio(v),
@@ -250,7 +265,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
-                          value: _zonesController.selectedParroquia,
+                          initialValue: _zonesController.selectedParroquia, // FIX: value -> initialValue
                           decoration: const InputDecoration(labelText: 'Parroquia *'),
                           items: _zonesController.parroquias.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
                           onChanged: _zonesController.selectedMunicipio == null ? null : (v) => _zonesController.selectParroquia(v),
@@ -299,12 +314,14 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                         const SizedBox(height: 12),
                         SwitchListTile(
                           title: const Text('¿Ofreces Delivery?', style: TextStyle(fontWeight: FontWeight.w600)),
-                          value: _aceptaDelivery, activeColor: AppColors.primaryPurple,
+                          value: _aceptaDelivery, 
+                          activeThumbColor: AppColors.primaryPurple, // FIX: activeColor -> activeThumbColor
                           onChanged: (v) => setState(() => _aceptaDelivery = v),
                           contentPadding: EdgeInsets.zero,
                         ),
                         const SizedBox(height: 24),
-                        _buildSectionTitle('3. Redes Sociales'),
+                        
+                        _buildSectionTitle('3. Conecta con tus Clientes'),
                         _buildTextField(_igCtrl, 'Instagram (Usuario o URL)', Icons.camera_alt),
                         const SizedBox(height: 12),
                         _buildTextField(_tiktokCtrl, 'TikTok (Usuario o URL)', Icons.music_note),
@@ -319,7 +336,8 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        _buildSectionTitle('4. Imágenes del Comercio'),
+                        
+                        _buildSectionTitle('4. Escaparate Visual'),
                         Row(
                           children: [
                             Expanded(child: _buildImagePicker('Logo', _profileController.logoName, () => _pickImage('logo'))),
@@ -328,20 +346,26 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        _buildSectionTitle('5. Documentos Legales (PDF)'),
+                        
+                        _buildSectionTitle('5. Respaldo de Confianza'),
                         _buildFilePicker('1. Certificado de RIF', _profileController.rifName, () => _pickPdf('rif')),
                         const SizedBox(height: 12),
                         _buildFilePicker('2. Documento Legal (Acta/RNE)', _profileController.legalName, () => _pickPdf('legal')),
                         const SizedBox(height: 12),
                         _buildFilePicker('3. Cédula de los firmantes', _profileController.cedulasName, () => _pickPdf('cedulas')),
                         const SizedBox(height: 40),
+                        
                         SizedBox(
                           height: 55,
                           child: ElevatedButton(
                             onPressed: _profileController.isLoading ? null : _submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryPurple,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
                             child: _profileController.isLoading
                                 ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2))
-                                : const Text('Guardar y Enviar a Revisión'),
+                                : const Text('🚀 Enviar para Verificación', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                         ),
                         const SizedBox(height: 40),
@@ -372,7 +396,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
 
   Widget _buildDropdown(String label, List<String> items, String? val, Function(String?) onChanged) {
     return DropdownButtonFormField<String>(
-      value: val,
+      initialValue: val, // FIX: value -> initialValue
       decoration: InputDecoration(labelText: '$label *'),
       items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, overflow: TextOverflow.ellipsis))).toList(),
       onChanged: onChanged,

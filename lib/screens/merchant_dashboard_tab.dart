@@ -38,6 +38,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // Fondo con gradiente original
         Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -62,7 +63,23 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
                 const SizedBox(height: 16),
                 _buildStoreInfo(),
                 const SizedBox(height: 24),
-                _buildMerchantGrid(context),
+                
+                // 1. ACCIÓN PRINCIPAL: VENDER / ESCANEAR (Destacado)
+                _buildSectionTitle('Vender Ahora'),
+                _buildMainActionCard(),
+                
+                const SizedBox(height: 24),
+                
+                // 2. ACELERADORES IA (Elite)
+                _buildSectionTitle('Aceleradores IA'),
+                _buildAIGrid(),
+
+                const SizedBox(height: 24),
+
+                // 3. GESTIÓN Y CRECIMIENTO (Menos frecuente)
+                _buildSectionTitle('Gestión del Negocio'),
+                _buildManagementGrid(),
+                
                 const SizedBox(height: 30),
                 _buildSubscriptionBanner(context),
                 const SizedBox(height: 100),
@@ -132,145 +149,206 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
           children: [
             _buildMiniStat('Visitas', '1,240', Icons.remove_red_eye, AppColors.info),
             const SizedBox(width: 12),
-            // --- NUEVO: PUNTOS DE REPUTACIÓN ---
             _buildMiniStat('Reputación', '100 pts', Icons.verified, AppColors.success),
-            // -----------------------------------
             const SizedBox(width: 12),
-            _buildMiniStat('Ganancias', '\$ 320', Icons.attach_money, AppColors.warning),
+            // La tarjeta de Ganancias resalta visualmente
+            _buildMiniStat('Ingresos', '\$ 320', Icons.account_balance_wallet, Colors.green, isHero: true),
           ],
         ),
-        // --- NUEVO: Alerta de ventas sin validar ---
         const SizedBox(height: 12),
+        
+        // Micro-copy persuasivo (NLP)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.warning.withValues(alpha: 0.1),
+            color: AppColors.primaryPurple.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.info_outline, color: AppColors.warning, size: 16),
-              SizedBox(width: 8),
+              const Icon(Icons.lightbulb_outline, color: AppColors.primaryPurple, size: 16),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Recuerda que si un cliente no valida su compra, tu reputación no sube.',
-                  style: TextStyle(fontSize: 11, color: AppColors.warning, fontWeight: FontWeight.w500),
+                  'Tip Pro: Valida los QR a tiempo para mantener tu reputación al 100% y vender más rápido.',
+                  style: TextStyle(fontSize: 11, color: AppColors.primaryPurple.withValues(alpha: 0.8), fontWeight: FontWeight.w600),
                 ),
               ),
             ],
           ),
         ),
-        // --------------------------------------------
       ],
     );
   }
 
-  Widget _buildMiniStat(String title, String value, IconData icon, Color color) {
+  Widget _buildMiniStat(String title, String value, IconData icon, Color color, {bool isHero = false}) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.white, 
+          color: isHero ? AppColors.darkCardColor : AppColors.white, 
           borderRadius: BorderRadius.circular(12), 
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))]
+          boxShadow: [BoxShadow(color: isHero ? AppColors.darkCardColor.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))]
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: color, size: 20),
+            Icon(icon, color: isHero ? Colors.white : color, size: 20),
             const SizedBox(height: 8),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: isHero ? Colors.white : AppColors.textDark)),
+            Text(title, style: TextStyle(fontSize: 11, color: isHero ? Colors.white70 : Colors.grey)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMerchantGrid(BuildContext context) {
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+    );
+  }
+
+  // --- ACCIÓN PRINCIPAL (Escanear QR - El botón más grande) ---
+  Widget _buildMainActionCard() {
+    return InkWell(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantScannerScreen())),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF11998e), Color(0xFF38ef7d)], // Verde dinero
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [BoxShadow(color: const Color(0xFF11998e).withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 8))],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
+              child: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 40),
+            ),
+            const SizedBox(width: 20),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Cobrar / Escanear QR', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+                  SizedBox(height: 4),
+                  Text('Valida la compra y suma a tu reputación.', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- HERRAMIENTAS IA (Fáciles de usar, generan valor) ---
+  Widget _buildAIGrid() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildSquareCard(
+            imagePath: 'assets/icons/robot-ia.webp',
+            title: 'Asistente IA',
+            subtitle: 'Textos mágicos',
+            color: Colors.purpleAccent,
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AiAssistantScreen()))
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildSquareCard(
+            imagePath: 'assets/icons/microfono.webp',
+            title: 'Dictar Oferta',
+            subtitle: 'Habla y vende',
+            color: Colors.pinkAccent,
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VoiceOfferScreen()))
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildSquareCard(
+            imagePath: 'assets/icons/reseña.webp', // Radar
+            title: 'Radar',
+            subtitle: 'Demanda en vivo',
+            color: Colors.orangeAccent,
+            onTap: () => Navigator.push(context, MaterialPageRoute(
+              builder: (_) => MerchantDemandRadar(categoriaComercio: widget.category)
+            ))
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- GESTIÓN (Grid de 3 columnas como el original, pero más elegante) ---
+  Widget _buildManagementGrid() {
     return GridView.count(
       crossAxisCount: 3,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      childAspectRatio: 0.8,
+      childAspectRatio: 0.85,
       children: [
-        _buildCard(
-          imagePath: 'assets/icons/oferta.webp', 
-          title: 'Escanear', 
-          subtitle: 'Validar Compra', 
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantScannerScreen()))
-        ),
-        _buildCard(
+        _buildGridCard(
           imagePath: 'assets/icons/oferta.webp',
-          title: 'Crear Oferta', 
-          subtitle: 'Manual', 
+          title: 'Lanzar Oferta', 
+          subtitle: 'Vender ya', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateOfferScreen()))
         ),
-        _buildCard(
+        _buildGridCard(
           imagePath: 'assets/icons/inventario.webp', 
-          title: 'Mis Ofertas', 
-          subtitle: 'Ver Catálogo', 
+          title: 'Mi Catálogo', 
+          subtitle: 'Ofertas activas', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantOffersListScreen()))
         ),
-        _buildCard(
-          imagePath: 'assets/icons/robot-ia.webp', 
-          title: 'Asistente IA', 
-          subtitle: 'Generar Textos', 
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AiAssistantScreen()))
+        _buildGridCard(
+          imagePath: 'assets/icons/ganancias.webp', 
+          title: 'Mis Ingresos', 
+          subtitle: 'Flujo de caja', 
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantEarningsScreen()))
         ),
-        _buildCard(
-          imagePath: 'assets/icons/microfono.webp', 
-          title: 'Por Voz', 
-          subtitle: 'Dictar Oferta', 
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VoiceOfferScreen()))
-        ),
-        _buildCard(
+        _buildGridCard(
           imagePath: 'assets/icons/metricas.webp', 
           title: 'Métricas', 
-          subtitle: 'Ver Impacto', 
+          subtitle: 'Ver impacto', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantMetricsScreen()))
         ),
-        _buildCard(
+        _buildGridCard(
           imagePath: 'assets/icons/cupones.webp', 
           title: 'Cupones', 
           subtitle: 'Promociones', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantCouponsScreen()))
         ),
-        _buildCard(
-          imagePath: 'assets/icons/ganancias.webp', 
-          title: 'Ganancias', 
-          subtitle: 'Flujo de Caja', 
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantEarningsScreen()))
-        ),
-        _buildCard(
+        _buildGridCard(
           imagePath: 'assets/icons/inventario.webp', 
           title: 'Inventario', 
-          subtitle: 'Subir Productos', 
+          subtitle: 'Subir productos', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddProductScreen()))
         ),
-        _buildCard(
+        _buildGridCard(
           imagePath: 'assets/icons/pools.webp', 
           title: 'Pools', 
-          subtitle: 'Compras Grupales', 
+          subtitle: 'Compras grupales', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantPoolsScreen()))
         ),
-        _buildCard(
+        _buildGridCard(
           imagePath: 'assets/icons/corona.webp', 
           title: 'Publicidad', 
-          subtitle: 'Destacar Ofertas', 
+          subtitle: 'Destacar ofertas', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantAdsScreen()))
         ),
-        _buildCard(
-          imagePath: 'assets/icons/reseña.webp', 
-          title: 'Radar', 
-          subtitle: 'Demanda de mercado', 
-          onTap: () => Navigator.push(context, MaterialPageRoute(
-            builder: (_) => MerchantDemandRadar(categoriaComercio: widget.category)
-          ))
-        ),
-        _buildCard(
+        _buildGridCard(
           imagePath: 'assets/icons/reseña.webp', 
           title: 'Reseñas', 
           subtitle: 'Reputación', 
@@ -280,7 +358,34 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
     );
   }
 
-  Widget _buildCard({required String imagePath, required String title, required String subtitle, required VoidCallback onTap}) {
+  // Tarjeta cuadrada para la sección IA
+  Widget _buildSquareCard({required String imagePath, required String title, required String subtitle, required Color color, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [BoxShadow(color: color.withValues(alpha: 0.15), blurRadius: 10, offset: const Offset(0, 5))],
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          children: [
+            Image.asset(imagePath, width: 36, height: 36, fit: BoxFit.contain, errorBuilder: (context, error, stackTrace) => Icon(Icons.auto_awesome, color: color, size: 32)),
+            const SizedBox(height: 10),
+            Text(title, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textDark, fontSize: 12, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 2),
+            Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textLight, fontSize: 9)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Tarjeta oscura (mantiene la estética original, pero agrupada)
+  Widget _buildGridCard({required String imagePath, required String title, required String subtitle, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -293,7 +398,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(imagePath, width: 40, height: 40, fit: BoxFit.contain, errorBuilder: (context, error, stackTrace) => const Icon(Icons.store, color: AppColors.white, size: 32)),
+            Image.asset(imagePath, width: 32, height: 32, fit: BoxFit.contain, errorBuilder: (context, error, stackTrace) => const Icon(Icons.store, color: AppColors.white, size: 28)),
             const SizedBox(height: 8),
             Text(title, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.white, fontSize: 11, fontWeight: FontWeight.w600)),
             const SizedBox(height: 2),

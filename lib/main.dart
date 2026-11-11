@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:connectivity_plus/connectivity_plus.dart'; // <-- IMPORTANTE
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'services/notification_service.dart';
-import 'services/sync_service.dart'; // <-- IMPORTANTE
+import 'services/sync_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 
@@ -18,11 +17,11 @@ import 'screens/update_password_screen.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
+  // Evitamos que un error detenga la app antes de mostrar algo en pantalla
   await runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    
-    usePathUrlStrategy(); 
 
+    // 1. Firebase (Blindado)
     if (!kIsWeb) {
       try {
         await Firebase.initializeApp();
@@ -36,15 +35,27 @@ void main() async {
       }
     } 
 
-    await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+    // 2. Supabase (Blindado con try/catch)
+    try {
+      await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+    } catch (e) {
+      debugPrint('⚠️ Error inicializando Supabase: $e');
+      // Si Supabase falla, igual mostramos la app para que veas el Login y el error.
+    }
 
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = 'https://9760817470fff8d5e02c3109fcb785af@o4512309844836353.ingest.us.sentry.io/4512309897134080';
-        options.tracesSampleRate = 1.0;
-      },
-      appRunner: () => runApp(const OfVeApp()),
-    );
+    // 3. Sentry (Blindado)
+    try {
+      await SentryFlutter.init(
+        (options) {
+          options.dsn = 'https://9760817470fff8d5e02c3109fcb785af@o4512309844836353.ingest.us.sentry.io/4512309897134080';
+          options.tracesSampleRate = 1.0;
+        },
+        appRunner: () => runApp(const OfVeApp()),
+      );
+    } catch (e) {
+      debugPrint('⚠️ Error inicializando Sentry: $e');
+      runApp(const OfVeApp()); // Arrancamos la app aunque Sentry falle
+    }
   }, (error, stackTrace) {
     Sentry.captureException(error, stackTrace: stackTrace);
   });
@@ -64,7 +75,7 @@ class _OfVeAppState extends State<OfVeApp> {
   void initState() {
     super.initState();
     _setupAuthListener();
-    _setupConnectivityListener(); // <-- INICIAR ESCUCHA DE RED
+    _setupConnectivityListener();
   }
 
   void _setupAuthListener() {
@@ -81,7 +92,6 @@ class _OfVeAppState extends State<OfVeApp> {
   void _setupConnectivityListener() {
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> result) {
       if (!result.contains(ConnectivityResult.none)) {
-        // ¡Volvió el internet!
         SyncService.syncPendingScans();
       }
     });
@@ -89,7 +99,7 @@ class _OfVeAppState extends State<OfVeApp> {
 
   @override
   void dispose() {
-    _connectivitySubscription.cancel(); // <-- LIMPIAR
+    _connectivitySubscription.cancel();
     super.dispose();
   }
 

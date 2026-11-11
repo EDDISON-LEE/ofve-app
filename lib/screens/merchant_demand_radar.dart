@@ -175,165 +175,271 @@ class _MerchantDemandRadarState extends State<MerchantDemandRadar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgTop,
+      backgroundColor: const Color(0xFFF7F8FA), // Fondo premium claro
       appBar: AppBar(
-        title: const Text('Radar de Demanda'),
+        title: const Text('Radar de Ganancias', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+        centerTitle: true,
         actions: [IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData)],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppColors.primaryPurple))
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('🔥 Búsquedas insatisfechas en tu ramo',
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                  const SizedBox(height: 4),
-                  const Text('Si agregas estos productos a tu inventario, captarás ventas inmediatas.',
-                      style: TextStyle(color: Colors.grey, fontSize: 13)),
-                  const SizedBox(height: 12),
+                  // --- SECCIÓN 1: DINERO SOBRE LA MESA ---
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.2), shape: BoxShape.circle),
+                        child: const Icon(Icons.savings, color: Colors.amber, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text('Dinero sobre la mesa', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textDark, letterSpacing: -0.5)),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text('Tus clientes buscan esto y no lo encuentran. Añádelo a tu inventario y captura ventas inmediatas.', style: TextStyle(color: Colors.grey, fontSize: 13, height: 1.4)),
+                  const SizedBox(height: 16),
+
                   if (_busquedasFallidas.isEmpty)
-                    const Card(
-                      color: AppColors.white,
-                      child: Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: Text('Aún no hay búsquedas insatisfechas registradas en tu categoría.',
-                            style: TextStyle(color: Colors.grey)),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [BoxShadow(color: Colors.green.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 10))],
+                        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green, size: 32),
+                          SizedBox(width: 16),
+                          Expanded(child: Text('Tu inventario está al día. No hay búsquedas insatisfechas en tu ramo.', style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.w500, height: 1.3))),
+                        ],
                       ),
                     )
                   else
-                    ..._busquedasFallidas.map((item) => Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          color: AppColors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          child: ListTile(
-                            leading: const Icon(Icons.search_off, color: AppColors.warning),
-                            title: Text(item['termino'].toString().toUpperCase(),
-                                style: const TextStyle(fontWeight: FontWeight.bold)),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                  color: AppColors.warning.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(20)),
-                              child: Text('${item['cantidad']} búsquedas',
-                                  style: const TextStyle(
-                                      color: AppColors.warning,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12)),
-                            ),
+                    ..._busquedasFallidas.map((item) => Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 5))],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(color: Colors.amber.withValues(alpha: 0.15), shape: BoxShape.circle),
+                            child: const Icon(Icons.trending_up, color: Colors.amber),
                           ),
-                        )),
-                  const Divider(height: 40, thickness: 1),
-                  const Text('📦 Alta Demanda: Clientes esperando Bultos',
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                  const SizedBox(height: 12),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(item['termino'].toString().toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(color: Colors.redAccent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                            child: Text('${item['cantidad']} buscando', style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w900, fontSize: 13)),
+                          ),
+                        ],
+                      ),
+                    )),
+
+                  const SizedBox(height: 32),
+
+                  // --- SECCIÓN 2: VENTAS EN ESPERA ---
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.redAccent.withValues(alpha: 0.15), shape: BoxShape.circle),
+                        child: const Icon(Icons.local_fire_department, color: Colors.redAccent, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text('Ventas en espera', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textDark, letterSpacing: -0.5)),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text('Clientes listos para comprar en bloque. Publica tu oferta al mayor y asegura el ingreso hoy.', style: TextStyle(color: Colors.grey, fontSize: 13, height: 1.4)),
+                  const SizedBox(height: 16),
+
                   if (_demandasPools.isEmpty)
-                    const Text('No hay demandas agrupadas en tu zona.',
-                        style: TextStyle(color: Colors.grey))
+                    const Text('No hay demandas agrupadas en tu zona.', style: TextStyle(color: Colors.grey))
                   else
                     ..._demandasPools.map((demanda) {
                       final isMeta = demanda['estado'] == 'Meta Alcanzada';
-                      final clientes = demanda['unidades_actuales'];
+                      
+                      // FIX CRÍTICO: Evitar crasheo por datos nulos o meta 0.
+                      final clientes = (demanda['unidades_actuales'] as num?)?.toInt() ?? 0;
+                      final meta = (demanda['meta_unidades'] as num?)?.toInt() ?? 1;
+                      final faltan = meta > clientes ? meta - clientes : 0;
+                      
+                      // FIX CRÍTICO: Clampear el valor entre 0.0 y 1.0 para evitar "Value must be between 0.0 and 1.0"
+                      final progreso = (clientes / meta).clamp(0.0, 1.0);
 
+                      // TARJETA PARA DEMANDA EN PROGRESO (Gamificada)
                       if (!isMeta) {
-                        return Card(
+                        return Container(
                           margin: const EdgeInsets.only(bottom: 16),
-                          color: AppColors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.radar, color: AppColors.primaryPurple),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    '${demanda['termino_original'].toString().toUpperCase()}: $clientes personas buscando.',
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [BoxShadow(color: AppColors.primaryPurple.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8))],
+                            border: Border.all(color: AppColors.primaryPurple.withValues(alpha: 0.3), width: 2),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text('${demanda['termino_original'].toString().toUpperCase()}: $clientes buscando', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                                   ),
-                                ),
-                                Text('${demanda['unidades_actuales']}/${demanda['meta_unidades']}',
-                                    style: const TextStyle(color: Colors.grey)),
-                              ],
-                            ),
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(color: AppColors.primaryPurple.withValues(alpha: 0.1), shape: BoxShape.circle),
+                                    child: const Icon(Icons.radar, color: AppColors.primaryPurple, size: 20),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              // FIX: Barra de progreso con gradiente y clampeada
+                              Stack(
+                                children: [
+                                  Container(
+                                    height: 12,
+                                    decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                  FractionallySizedBox(
+                                    widthFactor: progreso, // Ahora es seguro
+                                    child: Container(
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(colors: [Color(0xFF7C5DFE), Color(0xFFB39DDB)]),
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [BoxShadow(color: AppColors.primaryPurple.withValues(alpha: 0.5), blurRadius: 5)],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  const Icon(Icons.bolt, color: Colors.orange, size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    faltan > 0 
+                                      ? '¡Solo faltan $faltan clientes para que el bulto sea rentable!'
+                                      : '¡Casi listo para armar el bulto!',
+                                    style: const TextStyle(color: AppColors.primaryPurple, fontWeight: FontWeight.w700, fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         );
                       }
 
+                      // TARJETA DE OPORTUNIDAD (Meta Alcanzada) - EL DISEÑO ESTRELLA
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 20),
+                        margin: const EdgeInsets.only(bottom: 30),
                         decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.success, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                                color: AppColors.success.withValues(alpha: 0.1),
-                                blurRadius: 15,
-                                offset: const Offset(0, 5)),
-                          ],
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF11998e), Color(0xFF38ef7d)], // Verde Dinero
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [BoxShadow(color: const Color(0xFF11998e).withValues(alpha: 0.5), blurRadius: 30, offset: const Offset(0, 12))],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            // Cinta de urgencia
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              decoration: const BoxDecoration(
-                                color: AppColors.success,
-                                borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                               ),
-                              child: Row(
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.trending_up, color: Colors.white, size: 24),
-                                  const SizedBox(width: 8),
+                                  Icon(Icons.notifications_active, color: Colors.white, size: 18),
+                                  SizedBox(width: 8),
                                   Text(
-                                    '¡OPORTUNIDAD: ${demanda['termino_original'].toString().toUpperCase()}!',
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16),
+                                    'CIERRE DE VENTA INMINENTE',
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.5),
                                   ),
                                 ],
                               ),
                             ),
+                            
                             Padding(
-                              padding: const EdgeInsets.all(16.0),
+                              padding: const EdgeInsets.all(24),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Un total de $clientes clientes cerca de ti están buscando este producto.',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                        color: AppColors.textDark),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Text(
-                                    '¡Aprovecha la oportunidad! Si activas una oferta al por mayor, podrías vender 1 o más bultos de una sola vez.',
-                                    style: TextStyle(
-                                        fontSize: 13, color: AppColors.textLight, height: 1.4),
+                                    '¡OPORTUNIDAD: ${demanda['termino_original'].toString().toUpperCase()}!',
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 22, letterSpacing: -0.5),
                                   ),
                                   const SizedBox(height: 20),
+                                  
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        '$clientes',
+                                        style: const TextStyle(fontSize: 72, fontWeight: FontWeight.w900, color: Colors.white, height: 0.85, letterSpacing: -2),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      const Expanded(
+                                        child: Text(
+                                          'clientes YA quieren comprarte este producto.',
+                                          style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w800, height: 1.2),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  
+                                  const SizedBox(height: 20),
+                                  const Text(
+                                    'No dejes escapar este dinero. Si no publicas la oferta, otro comercio lo hará y te quitará a estos clientes.',
+                                    style: TextStyle(fontSize: 14, color: Colors.white, height: 1.5, fontWeight: FontWeight.w500),
+                                  ),
+                                  const SizedBox(height: 28),
+                                  
+                                  // CTA de alto impacto
                                   SizedBox(
                                     width: double.infinity,
-                                    height: 50,
+                                    height: 60,
                                     child: ElevatedButton.icon(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.success,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12)),
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: const Color(0xFF11998e),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                        elevation: 8,
+                                        shadowColor: Colors.black.withValues(alpha: 0.3),
                                       ),
                                       onPressed: () => _mostrarFormularioPrecio(demanda),
-                                      icon: const Icon(Icons.local_offer, color: Colors.white),
-                                      label: const Text('Activar Oferta al Mayor',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15)),
+                                      icon: const Icon(Icons.monetization_on, size: 28),
+                                      label: const Text(
+                                        'RECLAMAR VENTA AHORA',
+                                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 0.5),
+                                      ),
                                     ),
                                   ),
                                 ],

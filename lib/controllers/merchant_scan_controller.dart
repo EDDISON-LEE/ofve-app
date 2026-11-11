@@ -42,7 +42,7 @@ class MerchantScanController extends ChangeNotifier {
       // Buscamos la compra
       final compra = await _supabase
           .from('compras')
-          .select('*, usuarios(nombre, email)')
+          .select('*, usuarios!compras_usuario_id_fkey(nombre, email, telefono)')
           .eq('qr_token', qrToken)
           .maybeSingle();
 

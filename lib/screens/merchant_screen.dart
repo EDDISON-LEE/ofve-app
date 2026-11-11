@@ -1,9 +1,9 @@
-﻿import 'dart:io';
+﻿import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:path/path.dart' as p;
+import '../core/theme/app_theme.dart';
 
 class MerchantProfileScreen extends StatefulWidget {
   final VoidCallback onDocsUploaded;
@@ -18,55 +18,71 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
   final _supabase = Supabase.instance.client;
   String? _tipoComercio;
   
-  File? _docRif;
-  File? _docConstitutivo;
-  File? _docCedulas;
+  // FIX: Usamos XFile en lugar de File para evitar problemas de permisos en Android
+  XFile? _docRif;
+  XFile? _docConstitutivo;
+  XFile? _docCedulas;
   
   bool _isLoading = false;
 
-  Future<File?> _pickFile({required bool isPdfOnly}) async {
-    final result = await FilePicker.platform.pickFiles(
-      type: isPdfOnly ? FileType.custom : FileType.image,
-      allowedExtensions: isPdfOnly ? ['pdf'] : ['jpg', 'jpeg', 'png', 'webp'],
+  Future<XFile?> _pickFile({required bool isPdfOnly}) async {
+    final typeGroup = XTypeGroup(
+      label: isPdfOnly ? 'Documentos PDF' : 'Imágenes',
+      extensions: isPdfOnly ? ['pdf'] : ['jpg', 'jpeg', 'png', 'webp'],
     );
 
-    if (result != null && result.files.single.path != null) {
-      return File(result.files.single.path!);
+    try {
+      return await openFile(acceptedTypeGroups: [typeGroup]);
+    } catch (e) {
+      debugPrint('Error al seleccionar archivo: $e');
     }
     return null;
   }
 
-  // Función Senior: Comprime imágenes a WebP. Los PDFs pasan intactos.
-  Future<File> _processFile(File file) async {
-    final extension = p.extension(file.path).toLowerCase();
+  // FIX: Comprime imágenes en memoria (Bytes), no en disco
+  Future<Uint8List> _processFile(XFile file) async {
+    final ext = file.name.split('.').last.toLowerCase();
     
-    if (extension == '.pdf') return file;
+    // Si es PDF, lo leemos tal cual
+    if (ext == 'pdf') {
+      return await file.readAsBytes();
+    }
 
-    final targetPath = '${p.dirname(file.path)}/${p.basenameWithoutExtension(file.path)}.webp';
-    final result = await FlutterImageCompress.compressAndGetFile(
-      file.absolute.path,
-      targetPath,
-      format: CompressFormat.webp,
-      quality: 80, // Calidad óptima
-    );
-
-    if (result != null) return File(result.path);
-    return file;
+    // Si es imagen, la comprimimos a WebP en memoria
+    final bytes = await file.readAsBytes();
+    try {
+      final result = await FlutterImageCompress.compressWithList(
+        bytes,
+        minWidth: 800,
+        minHeight: 800,
+        quality: 80,
+        format: CompressFormat.webp,
+      );
+      return result;
+    } catch (e) {
+      debugPrint('Error comprimiendo imagen: $e');
+      return bytes; // Si falla, sube la original
+    }
   }
 
-  Future<String?> _uploadDocument(File file, String fileName) async {
+  Future<String?> _uploadDocument(XFile file, String fileName) async {
     try {
-      final processedFile = await _processFile(file);
-      final ext = p.extension(processedFile.path);
-      final finalName = '$fileName$ext';
+      final processedBytes = await _processFile(file);
+      final isPdf = file.name.split('.').last.toLowerCase() == 'pdf';
+      final ext = isPdf ? 'pdf' : 'webp';
+      final finalName = '$fileName.$ext';
       
       final userId = _supabase.auth.currentUser!.id;
       final path = '$userId/$finalName';
 
-      await _supabase.storage.from('documentos_comercios').upload(
+      // FIX: Subimos usando uploadBinary, que es a prueba de fallos de rutas
+      await _supabase.storage.from('documentos_comercios').uploadBinary(
         path, 
-        processedFile,
-        fileOptions: const FileOptions(upsert: true),
+        processedBytes,
+        fileOptions: const FileOptions(
+          upsert: true,
+          contentType: 'application/octet-stream',
+        ),
       );
 
       return path;
@@ -79,7 +95,7 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
   Future<void> _submitDocs() async {
     if (_tipoComercio == null || _docRif == null || _docConstitutivo == null || _docCedulas == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debes seleccionar el tipo y subir los 3 documentos.')),
+        const SnackBar(content: Text('Debes seleccionar el tipo y subir los 3 documentos.'), backgroundColor: Colors.orange),
       );
       return;
     }
@@ -93,10 +109,9 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
       final urlCedulas = await _uploadDocument(_docCedulas!, 'cedulas_$userId');
 
       if (urlRif == null || urlConst == null || urlCedulas == null) {
-        throw Exception('Error al subir los documentos al Storage.');
+        throw Exception('Error al subir los documentos al servidor. Revisa tu conexión.');
       }
 
-      // Actualizamos la BD: cambia a 'En Revision' y guarda las rutas
       await _supabase.from('comercios').update({
         'tipo_comercio': _tipoComercio,
         'doc_rif_url': urlRif,
@@ -107,15 +122,14 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Documentos enviados. Tu cuenta está en revisión.')),
+          const SnackBar(content: Text('¡Documentos enviados! Tu cuenta está en revisión.'), backgroundColor: AppColors.success),
         );
-        // Avisamos al AuthGate que ya terminamos para que nos deje pasar
         widget.onDocsUploaded();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -126,12 +140,13 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgTop,
       appBar: AppBar(
-        title: const Text('Completa tu perfil'),
-        automaticallyImplyLeading: false, // Bloquea el botón de regresar
+        title: const Text('Verificación de Negocio', style: TextStyle(fontWeight: FontWeight.bold)),
+        automaticallyImplyLeading: false, 
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.red),
             tooltip: 'Cerrar Sesión',
             onPressed: () => _supabase.auth.signOut(),
           )
@@ -139,21 +154,42 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Para proteger a los usuarios, necesitamos validar tu negocio. Sube los documentos requeridos para activar tu cuenta.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryPurple.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.primaryPurple.withValues(alpha: 0.3)),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(Icons.verified_user, color: AppColors.primaryPurple, size: 40),
+                    SizedBox(height: 12),
+                    Text(
+                      'Estás a un paso de activar tu cuenta y empezar a vender.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textDark),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Para garantizar la seguridad de los clientes, verifica tu identidad. Este proceso tarda menos de 48 horas.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, color: AppColors.textLight, height: 1.4),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               
               DropdownButtonFormField<String>(
-                value: _tipoComercio,
+                initialValue: _tipoComercio, 
                 decoration: const InputDecoration(
                   labelText: 'Tipo de Comercio',
+                  prefixIcon: Icon(Icons.store),
                   border: OutlineInputBorder(),
                 ),
                 items: const [
@@ -165,9 +201,8 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
               ),
               const SizedBox(height: 20),
 
-              // 1. Certificado de RIF
               _buildFilePicker(
-                title: '1. Certificado de RIF',
+                title: '1. RIF (Identidad Fiscal)',
                 subtitle: 'Documento PDF emitido por el SENIAT',
                 file: _docRif,
                 onPick: () async {
@@ -177,7 +212,6 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
               ),
               const SizedBox(height: 12),
 
-              // 2. Documento Constitutivo / Acta
               if (_tipoComercio == 'empresa')
                 _buildFilePicker(
                   title: '2. Acta Constitutiva',
@@ -217,10 +251,9 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
                 ),
               const SizedBox(height: 12),
 
-              // 3. Cédulas de firmantes
               _buildFilePicker(
                 title: '3. Cédula de los firmantes',
-                subtitle: 'Foto clara (se comprimirá a WebP)',
+                subtitle: 'Foto clara por ambos lados (JPG/PNG)',
                 file: _docCedulas,
                 onPick: () async {
                   final f = await _pickFile(isPdfOnly: false);
@@ -231,16 +264,16 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
               const SizedBox(height: 30),
               
               SizedBox(
-                height: 50,
+                height: 55,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitDocs,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryPurple,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
                   child: _isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Text('Enviar a Revisión'),
+                      ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Text('🚀 Solicitar Verificación', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -253,23 +286,24 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
   Widget _buildFilePicker({
     required String title,
     required String subtitle,
-    required File? file,
+    required XFile? file,
     required VoidCallback onPick,
   }) {
     return InkWell(
       onTap: _isLoading ? null : onPick,
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          border: Border.all(color: file != null ? Colors.green : Colors.grey),
-          borderRadius: BorderRadius.circular(8),
-          color: file != null ? Colors.green.withValues(alpha: 0.1) : null,
+          border: Border.all(color: file != null ? AppColors.success : Colors.grey.shade300, width: file != null ? 2 : 1),
+          borderRadius: BorderRadius.circular(16),
+          color: file != null ? AppColors.success.withValues(alpha: 0.05) : Colors.white,
         ),
         child: Row(
           children: [
             Icon(
               file != null ? Icons.check_circle : Icons.upload_file,
-              color: file != null ? Colors.green : Colors.grey,
+              color: file != null ? AppColors.success : Colors.grey,
               size: 32,
             ),
             const SizedBox(width: 16),
@@ -277,13 +311,14 @@ class _MerchantProfileScreenState extends State<MerchantProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  const SizedBox(height: 2),
                   Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                   if (file != null) ...[
                     const SizedBox(height: 4),
                     Text(
-                      p.basename(file.path),
-                      style: const TextStyle(fontSize: 10, color: Colors.green, fontWeight: FontWeight.bold),
+                      file.name, // En XFile, usamos .name en lugar de la ruta
+                      style: const TextStyle(fontSize: 11, color: AppColors.success, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ]

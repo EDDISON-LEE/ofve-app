@@ -15,31 +15,47 @@ class VoiceOfferController extends ChangeNotifier {
   Future<void> startListening() async {
     errorMessage = null;
     isSuccess = false;
+    notifyListeners();
     
-    bool available = await _speech.initialize(
-      onError: (val) => debugPrint('Error en voz: $val'),
-      onStatus: (val) {
-        if (val == 'done' || val == 'notListening') {
+    try {
+      bool available = await _speech.initialize(
+        onError: (val) {
+          errorMessage = 'Error de voz: ${val.errorMsg}';
           isListening = false;
           notifyListeners();
-        }
-      },
-    );
-
-    if (available) {
-      isListening = true;
-      notifyListeners();
-      
-      _speech.listen(
-        onResult: (val) {
-          transcript = val.recognizedWords;
-          notifyListeners();
         },
-        localeId: 'es_ES', // Idioma español
-        listenMode: stt.ListenMode.dictation,
+        onStatus: (val) {
+          if (val == 'done' || val == 'notListening') {
+            isListening = false;
+            notifyListeners();
+          }
+        },
       );
-    } else {
-      errorMessage = 'El micrófono no está disponible o no se dieron permisos.';
+
+      if (available) {
+        isListening = true;
+        notifyListeners();
+        
+        await _speech.listen(
+          onResult: (val) {
+            transcript = val.recognizedWords;
+            notifyListeners();
+          },
+          // NUEVA API: Opciones encapsuladas
+          listenOptions: stt.SpeechListenOptions(
+            partialResults: true,
+            cancelOnError: true,
+            listenMode: stt.ListenMode.dictation,
+          ),
+          localeId: 'es_ES', 
+        );
+      } else {
+        errorMessage = 'Permiso de micrófono denegado o no disponible.';
+        notifyListeners();
+      }
+    } catch (e) {
+      errorMessage = 'Error al iniciar el micrófono: $e';
+      isListening = false;
       notifyListeners();
     }
   }
@@ -52,7 +68,7 @@ class VoiceOfferController extends ChangeNotifier {
 
   Future<bool> publishFastOffer() async {
     if (transcript.trim().isEmpty) {
-      errorMessage = 'No hay texto para publicar.';
+      errorMessage = 'No hay texto para publicar. Dicta algo primero.';
       notifyListeners();
       return false;
     }
@@ -67,15 +83,14 @@ class VoiceOfferController extends ChangeNotifier {
       final comercioId = comercioData['id'];
       final categoria = comercioData['categoria'] ?? 'Otros';
 
-      // Guardamos la transcripción como descripción y un nombre genérico por defecto
       await _supabase.from('ofertas').insert({
         'comercio_id': comercioId,
         'producto_nombre': 'Oferta por Voz (${DateTime.now().hour}:${DateTime.now().minute})',
         'descripcion': transcript.trim(),
         'categoria': categoria,
-        'precio_regular': 0.0, // Por defecto, el comercio debe editarlo luego
+        'precio_regular': 0.0,
         'precio_oferta': 0.0,
-        'es_oferta': false, // Se crea como inventario hasta que se edite
+        'es_oferta': false,
         'stock': 1,
         'estado': 'Activo',
         'fecha_inicio': DateTime.now().toIso8601String(),
