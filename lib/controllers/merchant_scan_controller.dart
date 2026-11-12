@@ -50,20 +50,25 @@ class MerchantScanController extends ChangeNotifier {
       if (compra['comercio_id'] != comercioId) throw Exception('Esta compra pertenece a otro comercio.');
       if (compra['estado'] == 'Completado') throw Exception('Esta compra ya fue escaneada y completada.');
 
-      // 1. Marcar compra como Completada
-      await _supabase.from('compras').update({
+      // 1. Marcar compra como Completada (FIX: Verificamos que la actualización realmente ocurrió)
+      final updateResponse = await _supabase.from('compras').update({
         'estado': 'Completado',
+        'validado_por_cliente': false, 
         'fecha_validacion': DateTime.now().toIso8601String(),
-      }).eq('id', compra['id']);
+      }).eq('id', compra['id']).select(); // <-- AÑADIDO .select() PARA VERIFICAR
 
-      // 2. Actualizar Stock y Estado de la Oferta (NUEVO)
+      // Si Supabase bloquea la actualización por seguridad (RLS), devolverá una lista vacía
+      if (updateResponse.isEmpty) {
+        throw Exception('No se pudo actualizar la compra. Revisa los permisos RLS en Supabase.');
+      }
+
+      // 2. Actualizar Stock y Estado de la Oferta
       try {
-        // La compra debe tener el ID de la oferta comprada
-        final ofertaId = compra['oferta_id']; // Asegúrate de guardar esto en el PurchaseController
+        final ofertaId = compra['oferta_id'];
         if (ofertaId != null) {
           final ofertaData = await _supabase.from('ofertas').select('stock').eq('id', ofertaId).single();
           final stockActual = (ofertaData['stock'] as num?)?.toInt() ?? 0;
-          final nuevoStock = stockActual > 0 ? stockActual - 1 : 0; // Asumiendo 1 unidad por compra
+          final nuevoStock = stockActual > 0 ? stockActual - 1 : 0;
 
           await _supabase.from('ofertas').update({
             'stock': nuevoStock,

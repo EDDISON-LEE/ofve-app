@@ -16,6 +16,7 @@ import 'merchant_reviews_screen.dart';
 import 'merchant_pools_screen.dart';
 import 'merchant_ads_screen.dart'; 
 import 'merchant_offers_list_screen.dart'; 
+import 'merchant_sales_screen.dart'; // <-- IMPORTANTE: Asegúrate de tener este archivo
 
 class MerchantDashboardTab extends StatefulWidget {
   final String storeName;
@@ -38,7 +39,6 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Fondo con gradiente original
         Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -64,19 +64,16 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
                 _buildStoreInfo(),
                 const SizedBox(height: 24),
                 
-                // 1. ACCIÓN PRINCIPAL: VENDER / ESCANEAR (Destacado)
                 _buildSectionTitle('Vender Ahora'),
                 _buildMainActionCard(),
                 
                 const SizedBox(height: 24),
                 
-                // 2. ACELERADORES IA (Elite)
                 _buildSectionTitle('Aceleradores IA'),
                 _buildAIGrid(),
 
                 const SizedBox(height: 24),
 
-                // 3. GESTIÓN Y CRECIMIENTO (Menos frecuente)
                 _buildSectionTitle('Gestión del Negocio'),
                 _buildManagementGrid(),
                 
@@ -151,13 +148,11 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
             const SizedBox(width: 12),
             _buildMiniStat('Reputación', '100 pts', Icons.verified, AppColors.success),
             const SizedBox(width: 12),
-            // La tarjeta de Ganancias resalta visualmente
             _buildMiniStat('Ingresos', '\$ 320', Icons.account_balance_wallet, Colors.green, isHero: true),
           ],
         ),
         const SizedBox(height: 12),
         
-        // Micro-copy persuasivo (NLP)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
@@ -210,7 +205,6 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
     );
   }
 
-  // --- ACCIÓN PRINCIPAL (Escanear QR - El botón más grande) ---
   Widget _buildMainActionCard() {
     return InkWell(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantScannerScreen())),
@@ -219,7 +213,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF11998e), Color(0xFF38ef7d)], // Verde dinero
+            colors: [Color(0xFF11998e), Color(0xFF38ef7d)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -251,7 +245,6 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
     );
   }
 
-  // --- HERRAMIENTAS IA (Fáciles de usar, generan valor) ---
   Widget _buildAIGrid() {
     return Row(
       children: [
@@ -277,7 +270,7 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
         const SizedBox(width: 12),
         Expanded(
           child: _buildSquareCard(
-            imagePath: 'assets/icons/reseña.webp', // Radar
+            imagePath: 'assets/icons/reseña.webp',
             title: 'Radar',
             subtitle: 'Demanda en vivo',
             color: Colors.orangeAccent,
@@ -290,7 +283,6 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
     );
   }
 
-  // --- GESTIÓN (Grid de 3 columnas como el original, pero más elegante) ---
   Widget _buildManagementGrid() {
     return GridView.count(
       crossAxisCount: 3,
@@ -312,12 +304,14 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
           subtitle: 'Ofertas activas', 
           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantOffersListScreen()))
         ),
+        // --- FIX: Botón de Mis Ventas agregado ---
         _buildGridCard(
           imagePath: 'assets/icons/ganancias.webp', 
-          title: 'Mis Ingresos', 
-          subtitle: 'Flujo de caja', 
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantEarningsScreen()))
+          title: 'Mis Ventas', 
+          subtitle: 'Ver estados', 
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MerchantSalesScreen()))
         ),
+        // ----------------------------------------
         _buildGridCard(
           imagePath: 'assets/icons/metricas.webp', 
           title: 'Métricas', 
@@ -358,7 +352,6 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
     );
   }
 
-  // Tarjeta cuadrada para la sección IA
   Widget _buildSquareCard({required String imagePath, required String title, required String subtitle, required Color color, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
@@ -384,7 +377,6 @@ class _MerchantDashboardTabState extends State<MerchantDashboardTab> {
     );
   }
 
-  // Tarjeta oscura (mantiene la estética original, pero agrupada)
   Widget _buildGridCard({required String imagePath, required String title, required String subtitle, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
